@@ -12,6 +12,7 @@
     :root { --orange:#E85D04; --black:#080808; --cream:#F0EBE3; }
     html { font-size:16px; }
     body { font-family:'Space Grotesk',sans-serif; overflow-x:hidden; cursor:none; background:transparent; }
+    @media (hover:none) and (pointer:coarse) { body { cursor:auto; } }
     ::-webkit-scrollbar { width:2px; }
     ::-webkit-scrollbar-thumb { background:var(--orange); }
 
@@ -32,6 +33,7 @@
       mix-blend-mode:difference;
     }
     .cur.big { width:44px; height:44px; }
+    @media (hover:none) and (pointer:coarse) { .cur { display:none; } }
 
     /* ── ENTER ── */
     #enter {
@@ -579,16 +581,19 @@
   </main>
 
   <script>
-    // ── CURSOR
+    // ── CURSOR (desktop only)
     const cur = document.getElementById('cur');
-    document.addEventListener('mousemove', e => {
-      cur.style.left = e.clientX + 'px';
-      cur.style.top  = e.clientY + 'px';
-    });
-    document.querySelectorAll('a,button,.bk').forEach(el => {
-      el.addEventListener('mouseenter', () => cur.classList.add('big'));
-      el.addEventListener('mouseleave', () => cur.classList.remove('big'));
-    });
+    const isTouch = window.matchMedia('(hover:none) and (pointer:coarse)').matches;
+    if (!isTouch) {
+      document.addEventListener('mousemove', e => {
+        cur.style.left = e.clientX + 'px';
+        cur.style.top  = e.clientY + 'px';
+      });
+      document.querySelectorAll('a,button,.bk').forEach(el => {
+        el.addEventListener('mouseenter', () => cur.classList.add('big'));
+        el.addEventListener('mouseleave', () => cur.classList.remove('big'));
+      });
+    }
 
     // ── ENTER
     const enterEl = document.getElementById('enter');
