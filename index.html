@@ -5225,21 +5225,10 @@
       const _ash = Math.max(_blast, aftermathP * (1 - stageGoneP * .2));
       const _smoke = Math.max(aftermathP * (1 - stageGoneP * .35), _blast * .55);
 
-      // Crack engine — draw realistic cracks on hero stage
+      // Crack engine — redraw every 2nd frame only
       if (window.CrackEngine && heroStageEl) {
-        if (!heroStageEl.querySelector('#crack-canvas')) {
-          window.CrackEngine.attach(heroStageEl);
-        }
-        window.CrackEngine.draw(crackP, _fire);
-      }
-
-      // Fire engine — cellular automaton fire on hero stage
-      if (window.FireEngine && heroStageEl) {
-        if (!heroStageEl.querySelector('#fire-canvas')) {
-          window.FireEngine.attach(heroStageEl);
-        }
-        window.FireEngine.setIntensity(_fire * (1 - stageGoneP));
-        window.FireEngine.tick(0.016, vw * 0.5, vh * 0.5);
+        if (!heroStageEl.querySelector('#crack-canvas')) window.CrackEngine.attach(heroStageEl);
+        if (Math.round(btFloatPhase * 60) % 2 === 0) window.CrackEngine.draw(crackP, _fire);
       }
 
       // Shatter engine — trigger once on blast peak
@@ -5402,9 +5391,7 @@
   <!-- Physics engines — loaded after main script so they can find the DOM -->
   <script src="js/ash-engine.js"></script>
   <script src="js/shatter-engine.js"></script>
-  <script src="js/fire-engine.js"></script>
   <script src="js/crack-engine.js"></script>
-  <script src="js/book-fire.js"></script>
 </body>
 
 </html>
