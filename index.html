@@ -3810,9 +3810,8 @@
       mainEl.classList.add('show');
       document.getElementById('book-traveler').classList.add('show');
       requestAnimationFrame(() => {
-        const heroH = heroSection.offsetHeight;
-        const heroTravel = Math.max(1, heroH - window.innerHeight);
-        window.scrollTo(0, heroTravel * 0.52);
+        recalcLayout();
+        window.scrollTo(0, _heroTravel * 0.52);
       });
     }
     document.getElementById('e-btn').addEventListener('click', doEnter);
@@ -4367,11 +4366,36 @@
 
     // ── Lerp parallax ────────────────────────────
     function lerp(a, b, t) { return a + (b - a) * t; }
-    const pwEls = [...document.querySelectorAll('.pw')], pwCur = pwEls.map(() => 0);
-    function doParallax() { pwEls.forEach((el, i) => { const s = el.closest('section'), r = s.getBoundingClientRect(); const p = (window.innerHeight - r.top) / (window.innerHeight + r.height); const t = (p - .5) * 100; pwCur[i] = lerp(pwCur[i], t, .07); el.style.transform = 'translateY(' + pwCur[i].toFixed(2) + 'px)'; }); }
+    const pwEls = [...document.querySelectorAll('.pw')];
+    const pwCur = pwEls.map(() => 0);
+    const pwTarget = pwEls.map(() => 0);
+    function updateParallaxTargets() {
+      const ih = window.innerHeight;
+      pwEls.forEach((el, i) => {
+        const s = el.closest('section'), r = s.getBoundingClientRect();
+        pwTarget[i] = ((ih - r.top) / (ih + r.height) - .5) * 100;
+      });
+    }
+    function doParallax() {
+      let moving = false;
+      pwEls.forEach((el, i) => {
+        const next = lerp(pwCur[i], pwTarget[i], .07);
+        if (Math.abs(next - pwCur[i]) > 0.02) { moving = true; }
+        pwCur[i] = next;
+        el.style.transform = 'translateY(' + pwCur[i].toFixed(2) + 'px)';
+      });
+      return moving;
+    }
 
     // ── Traveling Book animation ────────────────
     const heroSection = document.getElementById('hero');
+    let _heroTravel = 1, _scrollMax = 1, _lastScrollY = -1;
+    function recalcLayout() {
+      const vh = window.innerHeight;
+      _heroTravel = Math.max(1, heroSection.offsetHeight - vh);
+      _scrollMax  = Math.max(1, document.body.scrollHeight - vh);
+    }
+    recalcLayout();
     const bookFrameEl = document.getElementById('book-frame');
     const heroScrollEl = document.querySelector('.hero-scroll');
     const heroTagEl = document.querySelector('.hero-tag');
@@ -4577,6 +4601,7 @@
       const h = heroFx.clientHeight || 1;
       const cx = w * .5;
       const cy = h * .49;
+      const minWH = Math.min(w, h);
       ctx.clearRect(0, 0, w, h);
 
       const dark = Math.max(0, pressureP * .28 + ash * .38 - stageGoneP * .4);
@@ -4605,7 +4630,7 @@
         ctx.restore();
       }
 
-      const crackScale = Math.min(w, h) * .9;
+      const crackScale = minWH * .9;
       fxCracks.forEach(crack => drawCrackPath(ctx, crack, cx, cy, crackScale, crackP, fire));
 
       if (blast > 0.002 || ash > 0.002) {
@@ -4615,7 +4640,7 @@
         for (let i = 0; i < waveCount; i++) {
           const p = clamp01((blast + ash * .55 - i * .08) / .9);
           if (p <= 0) continue;
-          const r = Math.min(w, h) * (.08 + p * (.42 + i * .11));
+          const r = minWH * (.08 + p * (.42 + i * .11));
           ctx.strokeStyle = `rgba(255,220,160,${(1 - p) * (.36 - i * .055)})`;
           ctx.lineWidth = 2 + (1 - p) * 12;
           ctx.beginPath();
@@ -4626,7 +4651,7 @@
       }
 
       if (hole > 0.002) {
-        const r = Math.min(w, h) * (.04 + hole * .22);
+        const r = minWH * (.04 + hole * .22);
         const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, r * 1.8);
         g.addColorStop(0, `rgba(0,0,0,${.96 * hole})`);
         g.addColorStop(.38, `rgba(22,7,0,${.92 * hole})`);
@@ -4644,7 +4669,7 @@
         ctx.globalCompositeOperation = 'screen';
         for (let i = 0; i < 18; i++) {
           const a = i / 18 * Math.PI * 2 + heroP * (5 + (i % 4));
-          const rr = Math.min(w, h) * (.055 + fire * (.08 + (i % 3) * .018));
+          const rr = minWH * (.055 + fire * (.08 + (i % 3) * .018));
           const x = cx + Math.cos(a) * rr * .32;
           const y = cy + Math.sin(a * 1.7) * rr * .18;
           const flame = ctx.createRadialGradient(x, y, 0, x, y, rr);
@@ -4684,7 +4709,7 @@
         fxDebris.forEach((d, i) => {
           const p = clamp01((ash - d.delay) / .86);
           if (p <= 0) return;
-          const travel = Math.min(w, h) * d.speed * p;
+          const travel = minWH * d.speed * p;
           const x = cx + Math.cos(d.a) * travel + Math.sin(p * 7 + i) * 18 * d.drift;
           const y = cy + Math.sin(d.a) * travel + p * p * h * .16;
           const sz = d.size * (.4 + p * 1.1);
@@ -4716,7 +4741,7 @@
         fxSparks.forEach((s) => {
           const p = clamp01((blast - s.delay) / s.life);
           if (p <= 0) return;
-          const dist = Math.min(w, h) * s.speed * p;
+          const dist = minWH * s.speed * p;
           const x = cx + Math.cos(s.a) * dist;
           const y = cy + Math.sin(s.a) * dist;
           const fade = (1 - p) * .92;
@@ -4739,18 +4764,12 @@
         fxAsh.forEach((a, i) => {
           const p = clamp01((ash - a.delay) / .92);
           if (p <= 0) return;
-          const dist = Math.min(w, h) * a.dist * p;
+          const dist = minWH * a.dist * p;
           const wob = Math.sin(heroP * 20 + a.wobble) * 18 * p;
           const x = cx + Math.cos(a.a) * dist + wob;
           const y = cy + Math.sin(a.a) * dist + p * h * a.fall;
           const alpha = Math.min(1, p * 3) * (1 - p * .35);
           ctx.fillStyle = a.glow ? `rgba(255,112,25,${alpha * .72})` : `rgba(18,13,10,${alpha * .62})`;
-          if (a.glow) {
-            ctx.shadowColor = 'rgba(255,92,18,.7)';
-            ctx.shadowBlur = 10;
-          } else {
-            ctx.shadowBlur = 0;
-          }
           ctx.beginPath();
           ctx.arc(x, y, a.size * (0.45 + p), 0, Math.PI * 2);
           ctx.fill();
@@ -4764,7 +4783,7 @@
         fxSmoke.forEach((s, i) => {
           const p = clamp01((smoke - s.delay) / .9);
           if (p <= 0) return;
-          const dist = Math.min(w, h) * s.r * (.6 + p * 1.4);
+          const dist = minWH * s.r * (.6 + p * 1.4);
           const x = cx + Math.cos(s.a + p * .3) * dist;
           const y = cy + Math.sin(s.a) * dist - p * h * s.lift;
           const radius = s.size * (.3 + p * .85);
@@ -4782,20 +4801,6 @@
       }
 
 
-      if (ash > 0.01 || smoke > 0.01) {
-        ctx.save();
-        ctx.globalCompositeOperation = 'overlay';
-        const grainAlpha = Math.min(.18, ash * .12 + smoke * .06);
-        ctx.fillStyle = `rgba(0,0,0,${grainAlpha})`;
-        for (let y = 0; y < h; y += 6) {
-          for (let x = (y % 12); x < w; x += 12) {
-            if (((x * 13 + y * 17 + Math.floor(heroP * 1000)) % 23) < 7) {
-              ctx.fillRect(x, y, 1.2, 1.2);
-            }
-          }
-        }
-        ctx.restore();
-      }
     }
 
 
@@ -4829,6 +4834,7 @@
 
     window.addEventListener('resize', () => {
       resizeHeroFx();
+      recalcLayout();
       if (window.scrollY < 10) {
         btX = window.innerWidth * 0.5;
         btY = window.innerHeight * 0.44;
@@ -4841,13 +4847,13 @@
       ensureTravelPages();
 
       const vw = window.innerWidth, vh = window.innerHeight;
-      const scrollMax = Math.max(1, document.body.scrollHeight - vh);
-      const heroH = heroSection.offsetHeight;
-      const heroTravel = Math.max(1, heroH - vh);
-      const heroP = Math.min(1, window.scrollY / heroTravel);
-      const fullP = window.scrollY / scrollMax;
+      const scrollY = window.scrollY;
+      const scrollChanged = scrollY !== _lastScrollY;
+      _lastScrollY = scrollY;
+      const heroP = Math.min(1, scrollY / _heroTravel);
+      const fullP = scrollY / _scrollMax;
       // Extended cinematic timeline — 1200vh hero, slow burn
-      const microTremorP   = smooth01((heroP - 0.02) / 0.10);  // very early faint shake
+      const microTremorP   = smooth01((heroP - 0.02) / 0.10);
       const crackP         = smooth01((heroP - 0.12) / 0.50);  // cracks grow slowly
       const pressureP      = smooth01((heroP - 0.22) / 0.44);  // pressure builds
       const deepPressureP  = smooth01((heroP - 0.48) / 0.20);  // deep shaking
@@ -4856,7 +4862,7 @@
       const bookRevealP    = smooth01((heroP - 0.73) / 0.22);
       const stageGoneP     = smooth01((heroP - 0.88) / 0.11);
 
-      if (heroStageEl) {
+      if (heroStageEl && scrollChanged) {
         const microTremor = microTremorP * 0.08;
         const tremor = (microTremor + pressureP * 0.45 + deepPressureP * 0.9 + Math.max(0, blastP) * 1.35) * (1 - stageGoneP);
         const shakeX = Math.sin(heroP * 430) * tremor * 10 + Math.sin(heroP * 137) * tremor * 4 + Math.sin(heroP * 820) * microTremor * 3;
@@ -4923,7 +4929,7 @@
             `translate(-50%, -50%) rotate(${angle}deg) translateX(${(ash * dist).toFixed(2)}${unit}) translateY(${(ash * rise - smoke * (index % 4) * 6).toFixed(2)}vh) scale(${(0.18 + ash * 1.2).toFixed(3)})`;
         });
       }
-      drawHeroCanvas(heroP, crackP, pressureP, Math.max(0, blastP), Math.max(aftermathP * (1 - stageGoneP * .35), Math.max(0, blastP) * .55), Math.max(Math.max(0, blastP) * .95, aftermathP * (1 - stageGoneP) * .82), Math.max(Math.max(0, blastP), aftermathP * (1 - stageGoneP * .2)), Math.max(Math.max(0, blastP) * .9, aftermathP) * (1 - stageGoneP * .18), stageGoneP);
+      if (scrollChanged) drawHeroCanvas(heroP, crackP, pressureP, Math.max(0, blastP), Math.max(aftermathP * (1 - stageGoneP * .35), Math.max(0, blastP) * .55), Math.max(Math.max(0, blastP) * .95, aftermathP * (1 - stageGoneP) * .82), Math.max(Math.max(0, blastP), aftermathP * (1 - stageGoneP * .2)), Math.max(Math.max(0, blastP) * .9, aftermathP) * (1 - stageGoneP * .18), stageGoneP);
 
       // Mobile: tighter float, smaller travel so the open book remains present.
       const floatAmp = isTouch ? 4 : 14;
@@ -5052,11 +5058,20 @@
     }
 
     // ── RAF loop ─────────────────────────────────
-    function raf() { doParallax(); doBookAnim(); cBg = lerpC(cBg, tBg, .06); bgEl.style.background = 'rgb(' + cBg.join(',') + ')'; requestAnimationFrame(raf); }
+    function raf() {
+      doParallax();
+      doBookAnim();
+      const next = lerpC(cBg, tBg, .06);
+      if (next[0] !== cBg[0] || next[1] !== cBg[1] || next[2] !== cBg[2]) {
+        cBg = next;
+        bgEl.style.background = 'rgb(' + cBg.join(',') + ')';
+      }
+      requestAnimationFrame(raf);
+    }
     raf();
 
-    window.addEventListener('scroll', () => { updateFrame(); updateBg(); }, { passive: true });
-    updateBg(); updateFrame();
+    window.addEventListener('scroll', () => { updateFrame(); updateBg(); updateParallaxTargets(); }, { passive: true });
+    updateBg(); updateFrame(); updateParallaxTargets();
 
     renderCats();
     renderBooks('All');
