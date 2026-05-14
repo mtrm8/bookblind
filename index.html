@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
-    href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Space+Grotesk:wght@300;400;500;600;700&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Space+Grotesk:wght@400;600;700&display=swap"
     rel="stylesheet">
   <style>
     *,
@@ -3834,6 +3834,7 @@
     // ── Categories + Books ────────────────────────
     let activeCat = 'All';
 
+    const catBtns = [];
     function renderCats() {
       const wrap = document.getElementById('cats');
       CATS.forEach(cat => {
@@ -3843,12 +3844,12 @@
         btn.addEventListener('click', () => {
           if (cat === activeCat) return;
           activeCat = cat;
-          document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+          catBtns.forEach(b => b.classList.remove('active'));
           btn.classList.add('active');
           renderBooks(cat);
         });
-
         wrap.appendChild(btn);
+        catBtns.push(btn);
       });
     }
 
@@ -3877,7 +3878,7 @@
         });
         grid.style.opacity = ''; grid.style.transform = '';
         setTimeout(() => {
-          document.querySelectorAll('.bk').forEach((el, i) => { setTimeout(() => el.classList.add('go'), i * 55); });
+          grid.querySelectorAll('.bk').forEach((el, i) => { setTimeout(() => el.classList.add('go'), i * 55); });
         }, 30);
       }, 220);
     }
@@ -4360,9 +4361,13 @@
     function updateFrame() { const max = document.body.scrollHeight - window.innerHeight; const f = Math.round(1 + (max > 0 ? window.scrollY / max : 0) * 99); if (f !== lastF) { lastF = f; frameEl.textContent = '[ ' + String(f).padStart(3, '0') + ' ]'; } }
 
     // ── Intersection observers ───────────────────
-    (() => { const io = new IntersectionObserver(entries => { entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('show'); }); }, { threshold: .05 }); document.querySelectorAll('.mf-line').forEach(el => io.observe(el)); })();
-    (() => { const io = new IntersectionObserver(entries => { entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('go'); }); }, { threshold: .2 }); document.querySelectorAll('.svc-bottom').forEach(el => io.observe(el)); })();
-    (() => { const io = new IntersectionObserver(entries => { entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('go'); }); }, { threshold: .2 }); const h = document.getElementById('cta-h'); if (h) io.observe(h); })();
+    (() => {
+      const io05 = new IntersectionObserver(entries => { entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('show'); io05.unobserve(e.target); } }); }, { threshold: .05 });
+      const io20 = new IntersectionObserver(entries => { entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('go'); io20.unobserve(e.target); } }); }, { threshold: .2 });
+      document.querySelectorAll('.mf-line').forEach(el => io05.observe(el));
+      document.querySelectorAll('.svc-bottom').forEach(el => io20.observe(el));
+      const h = document.getElementById('cta-h'); if (h) io20.observe(h);
+    })();
 
     // ── Lerp parallax ────────────────────────────
     function lerp(a, b, t) { return a + (b - a) * t; }
@@ -4389,6 +4394,8 @@
 
     // ── Traveling Book animation ────────────────
     const heroSection = document.getElementById('hero');
+    let _heroInView = true;
+    new IntersectionObserver(([e]) => { _heroInView = e.isIntersecting; }, { rootMargin: '200px' }).observe(heroSection);
     let _heroTravel = 1, _scrollMax = 1, _lastScrollY = -1;
     function recalcLayout() {
       const vh = window.innerHeight;
@@ -4862,7 +4869,7 @@
       const bookRevealP    = smooth01((heroP - 0.73) / 0.22);
       const stageGoneP     = smooth01((heroP - 0.88) / 0.11);
 
-      if (heroStageEl && scrollChanged) {
+      if (heroStageEl && scrollChanged && _heroInView) {
         const microTremor = microTremorP * 0.08;
         const tremor = (microTremor + pressureP * 0.45 + deepPressureP * 0.9 + Math.max(0, blastP) * 1.35) * (1 - stageGoneP);
         const shakeX = Math.sin(heroP * 430) * tremor * 10 + Math.sin(heroP * 137) * tremor * 4 + Math.sin(heroP * 820) * microTremor * 3;
@@ -5070,14 +5077,19 @@
     }
     raf();
 
-    window.addEventListener('scroll', () => { updateFrame(); updateBg(); updateParallaxTargets(); }, { passive: true });
+    let _scrollPending = false;
+    window.addEventListener('scroll', () => {
+      if (!_scrollPending) {
+        _scrollPending = true;
+        requestAnimationFrame(() => { updateFrame(); updateBg(); updateParallaxTargets(); _scrollPending = false; });
+      }
+    }, { passive: true });
     updateBg(); updateFrame(); updateParallaxTargets();
 
     renderCats();
     renderBooks('All');
   </script>
 
-  <!-- Physics engines — loaded after main script so they can find the DOM -->
 </body>
 
 </html>
