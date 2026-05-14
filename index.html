@@ -55,19 +55,20 @@
 
     .cur {
       position: fixed;
+      left: 0;
+      top: 0;
       width: 12px;
       height: 12px;
       background: #fff;
       border-radius: 50%;
       pointer-events: none;
-      /* קריטי: מאפשר ללחוץ "דרכו" על כפתורים */
       z-index: 9999;
+      will-change: transform;
       transform: translate(-50%, -50%);
       transition: width .2s, height .2s, opacity .3s;
       box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
       border: 1px solid rgba(255, 255, 255, 0.5);
       mix-blend-mode: difference;
-      /* הופך את הצבע לפי הרקע - מאוד מרשים */
     }
 
     /* מחביא את הסמן המקורי רק כשהעכבר המעוצב פועל */
@@ -3313,6 +3314,10 @@
         transform: scale(1)
       }
     }
+
+    #hero.hero-anim-paused * {
+      animation-play-state: paused !important;
+    }
   </style>
 </head>
 
@@ -3778,8 +3783,7 @@
       document.documentElement.classList.add('custom-cursor-active');
 
       document.addEventListener('mousemove', e => {
-        cur.style.left = e.clientX + 'px';
-        cur.style.top = e.clientY + 'px';
+        cur.style.transform = `translate(calc(${e.clientX}px - 50%), calc(${e.clientY}px - 50%))`;
         cur.style.opacity = "1";
       });
 
@@ -4395,7 +4399,10 @@
     // ── Traveling Book animation ────────────────
     const heroSection = document.getElementById('hero');
     let _heroInView = true;
-    new IntersectionObserver(([e]) => { _heroInView = e.isIntersecting; }, { rootMargin: '200px' }).observe(heroSection);
+    new IntersectionObserver(([e]) => {
+      _heroInView = e.isIntersecting;
+      heroSection.classList.toggle('hero-anim-paused', !e.isIntersecting);
+    }, { rootMargin: '200px' }).observe(heroSection);
     let _heroTravel = 1, _scrollMax = 1, _lastScrollY = -1;
     function recalcLayout() {
       const vh = window.innerHeight;
@@ -4417,6 +4424,7 @@
     const bookTraveler = document.getElementById('book-traveler');
     const bookTInner = document.getElementById('book-tinner');
     const btFront = document.querySelector('.btf-front');
+    let _lastShadowBoost = -1;
 
     // Mobile gets a calmer book that stays readable and never drifts away.
     const btInitScale = isTouch ? 0.62 : 1;
@@ -4992,15 +5000,23 @@
       btRx = lerp(btRx, rxTarget, lerpRot);
       btRz = lerp(btRz, rzTarget, lerpRot);
 
-      bookTraveler.style.left = btX + 'px';
-      bookTraveler.style.top = (btY + floatY) + 'px';
-      bookTraveler.style.opacity = String(Math.max(0, bookRevealP));
-      bookTInner.style.transform =
-        `translate(-50%,-50%) rotateX(${btRx.toFixed(2)}deg) rotateY(${btRy.toFixed(2)}deg) rotateZ(${btRz.toFixed(2)}deg) scale(${btScale.toFixed(3)})`;
-      const shadowBoost = Math.max(blastP, introBurst);
-      bookTInner.style.filter = shadowBoost > 0.002
-        ? `brightness(${(1 + shadowBoost * 0.16).toFixed(3)}) drop-shadow(0 ${(55 + shadowBoost * 44).toFixed(1)}px ${(90 + shadowBoost * 70).toFixed(1)}px rgba(0,0,0,.98)) drop-shadow(0 ${(18 + shadowBoost * 22).toFixed(1)}px ${(40 + shadowBoost * 38).toFixed(1)}px rgba(0,0,0,.72)) drop-shadow(${(-12 - shadowBoost * 18).toFixed(1)}px ${(6 + shadowBoost * 8).toFixed(1)}px ${(22 + shadowBoost * 24).toFixed(1)}px rgba(232,93,4,.28))`
-        : '';
+      const _bookOpacity = Math.max(0, bookRevealP);
+      if (_bookOpacity > 0.001) {
+        bookTraveler.style.left = btX + 'px';
+        bookTraveler.style.top = (btY + floatY) + 'px';
+        bookTraveler.style.opacity = String(_bookOpacity);
+        bookTInner.style.transform =
+          `translate(-50%,-50%) rotateX(${btRx.toFixed(2)}deg) rotateY(${btRy.toFixed(2)}deg) rotateZ(${btRz.toFixed(2)}deg) scale(${btScale.toFixed(3)})`;
+        const shadowBoost = Math.max(blastP, introBurst);
+        if (Math.abs(shadowBoost - _lastShadowBoost) > 0.002) {
+          _lastShadowBoost = shadowBoost;
+          bookTInner.style.filter = shadowBoost > 0.002
+            ? `brightness(${(1 + shadowBoost * 0.16).toFixed(3)}) drop-shadow(0 ${(55 + shadowBoost * 44).toFixed(1)}px ${(90 + shadowBoost * 70).toFixed(1)}px rgba(0,0,0,.98)) drop-shadow(0 ${(18 + shadowBoost * 22).toFixed(1)}px ${(40 + shadowBoost * 38).toFixed(1)}px rgba(0,0,0,.72)) drop-shadow(${(-12 - shadowBoost * 18).toFixed(1)}px ${(6 + shadowBoost * 8).toFixed(1)}px ${(22 + shadowBoost * 24).toFixed(1)}px rgba(232,93,4,.28))`
+            : '';
+        }
+      } else if (bookTraveler.style.opacity !== '0') {
+        bookTraveler.style.opacity = '0';
+      }
 
       // --- SCROLL-DRIVEN BOOK OPENING ---
       // Intro: jump forward, open fast, flip pages quickly, then linger in slow motion.
