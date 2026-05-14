@@ -33,7 +33,6 @@
       font-family: 'Space Grotesk', sans-serif;
       overflow-x: hidden;
       cursor: default;
-      /* מחזיר את העכבר המקורי כברירת מחדל */
       background: transparent;
     }
 
@@ -71,7 +70,6 @@
       mix-blend-mode: difference;
     }
 
-    /* מחביא את הסמן המקורי רק כשהעכבר המעוצב פועל */
     html.custom-cursor-active,
     html.custom-cursor-active * {
       cursor: none !important;
@@ -124,7 +122,6 @@
       background: none;
       border: none;
       cursor: pointer;
-      /* שונה מ-none ל-pointer כדי לאפשר לחיצה */
       padding: 0 1.2em;
       position: relative;
       opacity: 0;
@@ -166,7 +163,6 @@
 
     nav * {
       pointer-events: auto;
-      /* תוקן מ-all ל-auto כדי לאפשר לחיצות */
     }
 
     .nav-logo {
@@ -396,7 +392,6 @@
       height: 100%;
       pointer-events: none;
       z-index: 9;
-      mix-blend-mode: normal;
     }
 
     .hero-stage::before,
@@ -447,7 +442,7 @@
       box-shadow:
         0 0 var(--fire-shadow) rgba(232, 93, 4, .72),
         inset 0 0 42px rgba(0, 0, 0, .95);
-      filter: blur(.2px) contrast(1.15);
+      filter: contrast(1.15);
       will-change: transform, opacity;
     }
 
@@ -881,17 +876,6 @@
       color: rgba(26, 14, 8, .55);
     }
 
-    .trav-page-num {
-      position: absolute;
-      right: .8rem;
-      bottom: .65rem;
-      z-index: 1;
-      font-family: 'Bebas Neue';
-      font-size: 3.7rem;
-      line-height: 1;
-      color: rgba(26, 14, 8, .055);
-      pointer-events: none;
-    }
 
     /* Cover opening logic */
     #book-tinner .btf-front {
@@ -1066,18 +1050,6 @@
       letter-spacing: .15em;
       text-transform: uppercase;
       color: rgba(232, 93, 4, .22);
-    }
-
-    .btf-wm {
-      position: absolute;
-      bottom: -2.2rem;
-      right: -.8rem;
-      font-family: 'Bebas Neue';
-      font-size: 8.5rem;
-      line-height: 1;
-      color: rgba(255, 255, 255, .02);
-      pointer-events: none;
-      user-select: none;
     }
 
     /* ── SPINE ── */
@@ -1591,13 +1563,10 @@
         radial-gradient(circle at 4% 72%,  rgba(0, 0, 0, .78) 0 9%,  transparent 20%),
         radial-gradient(circle at 92% 68%, rgba(4, 1, 0, .72) 0 8%,  transparent 18%),
         linear-gradient(138deg, transparent 0 28%, rgba(255, 103, 0, .18) 30%, rgba(0, 0, 0, .88) 38%, transparent 46%),
-        linear-gradient(218deg, transparent 0 38%, rgba(200, 60, 0, .12) 40%, rgba(0, 0, 0, .70) 46%, transparent 56%),
-        repeating-linear-gradient(17deg, rgba(0, 0, 0, .14) 0 1px, transparent 1px 7px),
-        repeating-linear-gradient(108deg, rgba(0, 0, 0, .10) 0 1px, transparent 1px 12px);
+        linear-gradient(218deg, transparent 0 38%, rgba(200, 60, 0, .12) 40%, rgba(0, 0, 0, .70) 46%, transparent 56%);
       mix-blend-mode: multiply;
     }
 
-    /* Glowing char edge — orange embers peeking through cracks */
     .bk.scorched .bk-cover::after {
       content: '';
       position: absolute;
@@ -1605,17 +1574,11 @@
       z-index: 3;
       pointer-events: none;
       border-radius: inherit;
+      opacity: .65;
       box-shadow:
         inset 0 0 0 1.5px rgba(255, 80, 0, .38),
         inset 0 0 12px rgba(255, 60, 0, .22),
         inset 0 -4px 18px rgba(255, 120, 0, .28);
-      animation: charPulse 2.4s ease-in-out infinite alternate;
-      mix-blend-mode: screen;
-    }
-
-    @keyframes charPulse {
-      from { opacity: .45; }
-      to   { opacity: .92; }
     }
 
     .bk-n {
@@ -2192,19 +2155,6 @@
     }
 
     /* Watermark */
-    .cov-watermark {
-      position: absolute;
-      bottom: -2.2rem;
-      right: -1rem;
-      font-family: 'Bebas Neue';
-      font-size: 11rem;
-      line-height: 1;
-      color: rgba(255, 255, 255, .022);
-      letter-spacing: .02em;
-      pointer-events: none;
-      user-select: none;
-    }
-
     /* ── BACK OF COVER (inside front cover, seen mid-flip) ── */
     .bface-back {
       background:
@@ -3261,18 +3211,6 @@
       }
     }
 
-    @keyframes bookFloat {
-
-      0%,
-      100% {
-        transform: translate(-50%, -50%) rotateX(12deg) rotateY(-35deg) translateY(0)
-      }
-
-      50% {
-        transform: translate(-50%, -50%) rotateX(12deg) rotateY(-35deg) translateY(-22px)
-      }
-    }
-
     @keyframes spin {
       from {
         transform: rotate(0deg)
@@ -3345,7 +3283,6 @@
         </div>
         <div class="btf-sub">Digital Reading Platform</div>
         <div class="btf-footer"><span class="btf-fl">Est. 2024</span><span class="btf-fr">First Edition</span></div>
-        <div class="btf-wm">BB</div>
       </div>
       <!-- NEW INNER PAGES -->
       <div class="btf-inner-page" id="bt-p1" style="z-index:4;">
@@ -3426,7 +3363,6 @@
               <div class="cov-foot-l">Est. 2024</div>
               <div class="cov-foot-r">First Edition</div>
             </div>
-            <div class="cov-watermark">BB</div>
           </div>
 
           <!-- BACK face: inside of front cover (seen mid-flip) -->
@@ -3534,34 +3470,18 @@
         <div class="blast-shard s3"></div>
         <div class="blast-shard s4"></div>
         <div class="blast-shard s5"></div>
-        <div class="blast-shard s6"></div>
+        <div class="blast-shard tiny s6"></div>
         <div class="blast-shard tiny s7"></div>
         <div class="blast-shard tiny s8"></div>
         <div class="blast-shard tiny s9"></div>
-        <div class="blast-shard tiny s10"></div>
-        <div class="blast-shard tiny s11"></div>
-        <div class="blast-shard tiny s12"></div>
-        <div class="blast-shard tiny s13"></div>
-        <div class="blast-shard tiny s14"></div>
-        <div class="blast-shard tiny s15"></div>
-        <div class="blast-shard tiny s16"></div>
-        <div class="blast-shard tiny s17"></div>
-        <div class="blast-shard tiny s18"></div>
         <div class="ember-field">
           <span class="ember" style="--a:-18deg;--d:35vw;--rise:-18vh;--sz:9px;--o:.9"></span>
-          <span class="ember" style="--a:22deg;--d:44vw;--rise:-26vh;--sz:6px;--o:.65"></span>
           <span class="ember" style="--a:49deg;--d:38vw;--rise:-34vh;--sz:11px;--o:.8"></span>
-          <span class="ember" style="--a:86deg;--d:32vh;--rise:-42vh;--sz:5px;--o:.75"></span>
           <span class="ember" style="--a:132deg;--d:36vw;--rise:-21vh;--sz:8px;--o:.7"></span>
-          <span class="ember" style="--a:176deg;--d:43vw;--rise:-28vh;--sz:6px;--o:.85"></span>
           <span class="ember" style="--a:221deg;--d:31vw;--rise:-19vh;--sz:10px;--o:.55"></span>
-          <span class="ember" style="--a:258deg;--d:30vh;--rise:-36vh;--sz:7px;--o:.8"></span>
           <span class="ember" style="--a:309deg;--d:41vw;--rise:-24vh;--sz:5px;--o:.72"></span>
-          <span class="ember" style="--a:342deg;--d:34vw;--rise:-31vh;--sz:12px;--o:.62"></span>
           <span class="ember" style="--a:7deg;--d:46vw;--rise:-44vh;--sz:4px;--o:.66"></span>
-          <span class="ember" style="--a:65deg;--d:52vw;--rise:-37vh;--sz:7px;--o:.76"></span>
           <span class="ember" style="--a:116deg;--d:48vw;--rise:-51vh;--sz:3px;--o:.64"></span>
-          <span class="ember" style="--a:199deg;--d:55vw;--rise:-33vh;--sz:8px;--o:.58"></span>
           <span class="ember" style="--a:286deg;--d:49vw;--rise:-47vh;--sz:5px;--o:.82"></span>
         </div>
         <div class="hero-tag">Digital Library</div>
@@ -3786,7 +3706,6 @@
     const cur = document.getElementById('cur');
 
     if (!isTouch) {
-      // מפעיל את הסמן המעוצב רק במחשב
       document.documentElement.classList.add('custom-cursor-active');
 
       document.addEventListener('mousemove', e => {
@@ -3799,7 +3718,6 @@
       cur.style.display = "none";
     }
 
-    // אופטימיזציה: שימוש ב-Delegation עבור הסמן במקום הצמדה לכל אלמנט בנפרד
     if (!isTouch) {
       document.addEventListener('mouseover', (e) => {
         if (e.target.closest('a, button, .bk, .cat-btn, .cta-link')) {
@@ -4161,7 +4079,6 @@
           el.style.opacity = '0';
         }, 50);
 
-        // ניקוי האלמנט מה-DOM לאחר סיום האנימציה
         setTimeout(() => el.remove(), dur + delay + 100);
 
         frags.push({ el });
@@ -4174,7 +4091,7 @@
       if (!buy) return;
       buy.addEventListener('click', () => {
         const col = (currentBook && currentBook.color) ? currentBook.color : '#c44b04';
-        const title = currentBook ? currentBook.title : 'this book'; // תיקון שגיאת ReferenceError
+        const title = currentBook ? currentBook.title : 'this book';
         buy.disabled = true;
         buy.style.opacity = '0.4';
 
@@ -4428,8 +4345,15 @@
     const heroCtx = heroFx ? heroFx.getContext('2d') : null;
     const blastShards = [...document.querySelectorAll('.blast-shard')];
     const embers = [...document.querySelectorAll('.ember')];
-    const shardAngles = [-12, 31, 88, 151, 207, 276, 18, 57, 113, 168, 238, 304, 5, 73, 137, 191, 251, 328];
-    const shardDistances = [38, 46, 34, 44, 39, 32, 30, 39, 31, 36, 42, 34, 48, 45, 41, 50, 46, 52];
+    const emberData = embers.map(e => ({
+      angle: parseFloat(e.style.getPropertyValue('--a')) || 0,
+      dist: parseFloat(e.style.getPropertyValue('--d')) || 30,
+      rise: parseFloat(e.style.getPropertyValue('--rise')) || -20,
+      opacity: parseFloat(e.style.getPropertyValue('--o')) || .7,
+      unit: String(e.style.getPropertyValue('--d')).includes('vh') ? 'vh' : 'vw'
+    }));
+    const shardAngles = [-12, 31, 88, 151, 207, 18, 57, 238, 304];
+    const shardDistances = [38, 46, 34, 44, 39, 30, 39, 34, 48];
     const bookTraveler = document.getElementById('book-traveler');
     const bookTInner = document.getElementById('book-tinner');
     const btFront = document.querySelector('.btf-front');
@@ -4850,7 +4774,6 @@
           <div class="trav-page-author">${book.author}</div>
           <p>${book.desc}</p>
           <div class="trav-page-quote">${book.quote}</div>
-          <div class="trav-page-num">${book.num}</div>
         `;
       });
 
@@ -4945,11 +4868,7 @@
             `translate(-50%, -50%) rotate(${angle}deg) translateX(${(ash * dist).toFixed(2)}${unit}) translateY(${(-smoke * (index % 3) * 5).toFixed(2)}vh) rotate(${(ash * (105 + index * 12)).toFixed(2)}deg) scale(${(0.08 + ash * (shard.classList.contains('tiny') ? 1.35 : 1.05)).toFixed(3)})`;
         });
         embers.forEach((ember, index) => {
-          const angle = parseFloat(ember.style.getPropertyValue('--a')) || 0;
-          const dist = parseFloat(ember.style.getPropertyValue('--d')) || 30;
-          const rise = parseFloat(ember.style.getPropertyValue('--rise')) || -20;
-          const opacity = parseFloat(ember.style.getPropertyValue('--o')) || .7;
-          const unit = String(ember.style.getPropertyValue('--d')).includes('vh') ? 'vh' : 'vw';
+          const { angle, dist, rise, opacity, unit } = emberData[index];
           ember.style.opacity = (ash * opacity).toFixed(3);
           ember.style.transform =
             `translate(-50%, -50%) rotate(${angle}deg) translateX(${(ash * dist).toFixed(2)}${unit}) translateY(${(ash * rise - smoke * (index % 4) * 6).toFixed(2)}vh) scale(${(0.18 + ash * 1.2).toFixed(3)})`;
