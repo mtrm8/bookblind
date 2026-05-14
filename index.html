@@ -492,7 +492,7 @@
         radial-gradient(circle at 72% 59%, rgba(36, 33, 30, .58) 0 13%, transparent 31%);
       filter: blur(var(--smoke-blur)) contrast(1.2);
       mix-blend-mode: multiply;
-      will-change: transform, opacity, filter;
+      will-change: transform, opacity;
     }
 
     .burn-vignette {
@@ -3318,6 +3318,13 @@
     #hero.hero-anim-paused * {
       animation-play-state: paused !important;
     }
+    #hero.hero-anim-paused .hero-stage,
+    #hero.hero-anim-paused .blast-hole,
+    #hero.hero-anim-paused .smoke-cloud,
+    #hero.hero-anim-paused .intro-brand,
+    #hero.hero-anim-paused .blast-shard {
+      will-change: auto;
+    }
   </style>
 </head>
 
@@ -4389,9 +4396,11 @@
       let moving = false;
       pwEls.forEach((el, i) => {
         const next = lerp(pwCur[i], pwTarget[i], .07);
-        if (Math.abs(next - pwCur[i]) > 0.02) { moving = true; }
-        pwCur[i] = next;
-        el.style.transform = 'translateY(' + pwCur[i].toFixed(2) + 'px)';
+        if (Math.abs(next - pwCur[i]) > 0.02) {
+          moving = true;
+          pwCur[i] = next;
+          el.style.transform = 'translateY(' + pwCur[i].toFixed(2) + 'px)';
+        }
       });
       return moving;
     }
@@ -4425,6 +4434,7 @@
     const bookTInner = document.getElementById('book-tinner');
     const btFront = document.querySelector('.btf-front');
     let _lastShadowBoost = -1;
+    let _btfPagesCached = null;
 
     // Mobile gets a calmer book that stays readable and never drifts away.
     const btInitScale = isTouch ? 0.62 : 1;
@@ -4845,6 +4855,7 @@
       });
 
       bookTraveler.dataset.pagesPopulated = 'true';
+      _btfPagesCached = [...bookTInner.querySelectorAll('.btf-inner-page')];
     }
 
     window.addEventListener('resize', () => {
@@ -5044,40 +5055,41 @@
           ? 1 - settleP
           : normalReadP;
 
-      // Keep the front cover comfortably visible so the cover image never vanishes.
-      const coverAngle = coverP * (isTouch ? 58 : 64);
-      if (btFront) {
-        const coverLift = Math.sin(coverP * Math.PI) * (isTouch ? 7 : 11);
-        btFront.style.transform = `translateZ(${30 + coverLift}px) rotateY(${-coverAngle}deg) rotateZ(${coverP * -0.8}deg)`;
+      if (scrollChanged) {
+        const coverAngle = coverP * (isTouch ? 58 : 64);
+        if (btFront) {
+          const coverLift = Math.sin(coverP * Math.PI) * (isTouch ? 7 : 11);
+          btFront.style.transform = `translateZ(${30 + coverLift}px) rotateY(${-coverAngle}deg) rotateZ(${coverP * -0.8}deg)`;
+        }
+
+        const pages = _btfPagesCached || [];
+        const pageWindow = pages.length ? 0.92 / pages.length : 0.08;
+        pages.forEach((pageEl, index) => {
+          const start = index * pageWindow;
+          const p = smooth01((cycleP - start) / (pageWindow * 1.45));
+          const flutterSpeed = introActive ? 38 : settling ? 18 : 11;
+          const flutterStrength = introActive ? 3.8 : settling ? 2.4 : 2.1;
+          const flutter = Math.sin((cycleP * flutterSpeed + index * .72) * Math.PI) * (1 - Math.abs(p - .5) * 2) * flutterStrength;
+          const maxPageAngle = introActive ? (isTouch ? 76 : 82) : (isTouch ? 68 : 74);
+          const angle = p * maxPageAngle + flutter;
+          const lift = Math.sin(p * Math.PI) * (isTouch ? 10 : 20);
+          const z = 22 - index * 1.7 + lift;
+          const curl = Math.sin(p * Math.PI) * (isTouch ? 2 : 4);
+          const edgeShadow = .08 + Math.sin(p * Math.PI) * .2;
+
+          pageEl.style.setProperty('--page-shadow', edgeShadow.toFixed(3));
+          pageEl.style.opacity = String(coverP);
+          pageEl.style.transform = `translateZ(${z.toFixed(2)}px) rotateY(${-angle.toFixed(2)}deg) rotateZ(${curl.toFixed(2)}deg) translateX(${(p * 8).toFixed(2)}px)`;
+        });
+
+        const textFade = Math.max(0, 1 - heroP * 1.9).toString();
+        if (heroScrollEl) heroScrollEl.style.opacity = textFade;
+        if (heroTagEl) heroTagEl.style.opacity = textFade;
+        if (heroTag2El) heroTag2El.style.opacity = textFade;
+
+        if (heroP > 0.9 || fullP > 0.24) bookFrameEl.classList.add('show');
+        else bookFrameEl.classList.remove('show');
       }
-
-      const pages = [...bookTInner.querySelectorAll('.btf-inner-page')];
-      const pageWindow = pages.length ? 0.92 / pages.length : 0.08;
-      pages.forEach((pageEl, index) => {
-        const start = index * pageWindow;
-        const p = smooth01((cycleP - start) / (pageWindow * 1.45));
-        const flutterSpeed = introActive ? 38 : settling ? 18 : 11;
-        const flutterStrength = introActive ? 3.8 : settling ? 2.4 : 2.1;
-        const flutter = Math.sin((cycleP * flutterSpeed + index * .72) * Math.PI) * (1 - Math.abs(p - .5) * 2) * flutterStrength;
-        const maxPageAngle = introActive ? (isTouch ? 76 : 82) : (isTouch ? 68 : 74);
-        const angle = p * maxPageAngle + flutter;
-        const lift = Math.sin(p * Math.PI) * (isTouch ? 10 : 20);
-        const z = 22 - index * 1.7 + lift;
-        const curl = Math.sin(p * Math.PI) * (isTouch ? 2 : 4);
-        const edgeShadow = .08 + Math.sin(p * Math.PI) * .2;
-
-        pageEl.style.setProperty('--page-shadow', edgeShadow.toFixed(3));
-        pageEl.style.opacity = String(coverP);
-        pageEl.style.transform = `translateZ(${z.toFixed(2)}px) rotateY(${-angle.toFixed(2)}deg) rotateZ(${curl.toFixed(2)}deg) translateX(${(p * 8).toFixed(2)}px)`;
-      });
-
-      const textFade = Math.max(0, 1 - heroP * 1.9).toString();
-      if (heroScrollEl) heroScrollEl.style.opacity = textFade;
-      if (heroTagEl) heroTagEl.style.opacity = textFade;
-      if (heroTag2El) heroTag2El.style.opacity = textFade;
-
-      if (heroP > 0.9 || fullP > 0.24) bookFrameEl.classList.add('show');
-      else bookFrameEl.classList.remove('show');
     }
 
     // ── RAF loop ─────────────────────────────────
