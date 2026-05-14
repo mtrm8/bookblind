@@ -58,16 +58,14 @@
       top: 0;
       width: 12px;
       height: 12px;
-      background: #fff;
+      background: rgba(255,255,255,0.85);
       border-radius: 50%;
       pointer-events: none;
       z-index: 9999;
       will-change: transform;
       transform: translate(-50%, -50%);
       transition: width .2s, height .2s, opacity .3s;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-      border: 1px solid rgba(255, 255, 255, 0.5);
-      mix-blend-mode: difference;
+      box-shadow: 0 0 0 1px rgba(0,0,0,0.25);
     }
 
     html.custom-cursor-active,
@@ -157,8 +155,8 @@
       align-items: center;
       justify-content: space-between;
       padding: 1.5rem 2rem;
-      mix-blend-mode: difference;
       pointer-events: none;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.28) 0%, transparent 100%);
     }
 
     nav * {
@@ -495,7 +493,6 @@
       height: min(280px, 62vw);
       position: relative;
       animation: spin 28s linear infinite;
-      filter: drop-shadow(0 20px 60px rgba(0, 0, 0, .3));
     }
 
     .sh-ast::before,
@@ -529,7 +526,6 @@
       height: min(260px, 58vw);
       position: relative;
       animation: spin 22s linear infinite reverse;
-      filter: drop-shadow(0 20px 60px rgba(255, 255, 255, .04));
     }
 
     .sh-cross::before,
@@ -560,7 +556,6 @@
       border-radius: 50%;
       border: clamp(22px, 5vw, 42px) solid var(--black);
       animation: spin 18s linear infinite;
-      filter: drop-shadow(0 20px 60px rgba(0, 0, 0, .3));
       position: relative;
     }
 
@@ -2406,14 +2401,6 @@
       }
     }
 
-    /* ── Traveling book: mobile overrides ── */
-    @media (hover:none) and (pointer:coarse) {
-      #book-tinner {
-        /* One lighter shadow — avoids GPU repaint stutter every frame */
-        filter: drop-shadow(0 16px 36px rgba(0, 0, 0, .82));
-      }
-    }
-
     /* KEYFRAMES */
     @keyframes rise {
       from {
@@ -2434,18 +2421,6 @@
 
       to {
         transform: rotate(360deg)
-      }
-    }
-
-    @keyframes nudge {
-
-      0%,
-      100% {
-        transform: translateX(-50%) translateY(0)
-      }
-
-      50% {
-        transform: translateX(-50%) translateY(-9px)
       }
     }
 
@@ -3425,6 +3400,16 @@
       const h = document.getElementById('cta-h'); if (h) io20.observe(h);
     })();
 
+    // ── Pause spinning shapes when off-screen ────
+    (() => {
+      const spinEls = document.querySelectorAll('.sh-ast, .sh-cross, .sh-ring');
+      if (!spinEls.length) return;
+      const io = new IntersectionObserver(entries => {
+        entries.forEach(e => { e.target.style.animationPlayState = e.isIntersecting ? 'running' : 'paused'; });
+      }, { rootMargin: '100px' });
+      spinEls.forEach(el => { el.style.animationPlayState = 'paused'; io.observe(el); });
+    })();
+
     // ── Lerp parallax ────────────────────────────
     function lerp(a, b, t) { return a + (b - a) * t; }
     const pwEls = [...document.querySelectorAll('.pw')];
@@ -3456,23 +3441,26 @@
 
 
 
-    // ── RAF loop ─────────────────────────────────
+    // ── RAF loop (self-terminates when idle) ─────
+    let _rafId = null;
     function raf() {
-      doParallax();
+      const moving = doParallax();
       const next = lerpC(cBg, tBg, .06);
+      let bgChanging = false;
       if (next[0] !== cBg[0] || next[1] !== cBg[1] || next[2] !== cBg[2]) {
-        cBg = next;
-        bgEl.style.background = 'rgb(' + cBg.join(',') + ')';
+        cBg = next; bgEl.style.background = 'rgb(' + cBg.join(',') + ')';
+        bgChanging = true;
       }
-      requestAnimationFrame(raf);
+      _rafId = (moving || bgChanging) ? requestAnimationFrame(raf) : null;
     }
-    raf();
+    function startRaf() { if (!_rafId) _rafId = requestAnimationFrame(raf); }
+    startRaf();
 
     let _scrollPending = false;
     window.addEventListener('scroll', () => {
       if (!_scrollPending) {
         _scrollPending = true;
-        requestAnimationFrame(() => { updateFrame(); updateBg(); updateParallaxTargets(); _scrollPending = false; });
+        requestAnimationFrame(() => { updateFrame(); updateBg(); updateParallaxTargets(); startRaf(); _scrollPending = false; });
       }
     }, { passive: true });
     updateBg(); updateFrame(); updateParallaxTargets();
