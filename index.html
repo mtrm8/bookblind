@@ -1,3451 +1,1274 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BOOKBLIND — Digital Books</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Space+Grotesk:wght@400;600;700&display=swap"
-    rel="stylesheet">
-  <style>
-    *,
-    *::before,
-    *::after {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    :root {
-      --orange: #E85D04;
-      --black: #080808;
-      --cream: #F0EBE3;
-    }
-
-    html {
-      font-size: 16px;
-    }
-
-    body {
-      font-family: 'Space Grotesk', sans-serif;
-      overflow-x: hidden;
-      cursor: default;
-      background: transparent;
-    }
-
-    ::-webkit-scrollbar {
-      width: 2px;
-    }
-
-    ::-webkit-scrollbar-thumb {
-      background: var(--orange);
-    }
-
-    #bg {
-      position: fixed;
-      inset: 0;
-      z-index: -10;
-      background: var(--black);
-    }
-
-
-    .cur {
-      position: fixed;
-      left: 0;
-      top: 0;
-      width: 12px;
-      height: 12px;
-      background: rgba(255,255,255,0.85);
-      border-radius: 50%;
-      pointer-events: none;
-      z-index: 9999;
-      will-change: transform;
-      transform: translate(-50%, -50%);
-      transition: width .2s, height .2s, opacity .3s;
-      box-shadow: 0 0 0 1px rgba(0,0,0,0.25);
-    }
-
-    html.custom-cursor-active,
-    html.custom-cursor-active * {
-      cursor: none !important;
-    }
-
-    .cur.big {
-      width: 44px;
-      height: 44px;
-    }
-
-    /* ENTER */
-    #enter {
-      position: fixed;
-      inset: 0;
-      background: var(--black);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-      transition: opacity .4s ease, visibility .4s ease;
-    }
-
-    #enter.gone {
-      opacity: 0;
-      visibility: hidden;
-      pointer-events: none;
-    }
-
-    .e-logo {
-      font-family: 'Space Grotesk';
-      font-weight: 700;
-      font-size: clamp(2.5rem, 9vw, 6rem);
-      letter-spacing: .08em;
-      color: #fff;
-      margin-bottom: 2.5rem;
-      opacity: 0;
-      animation: rise 1s ease .4s forwards;
-    }
-
-    .e-logo b {
-      color: var(--orange);
-    }
-
-    .e-btn {
-      font-size: .82rem;
-      letter-spacing: .4em;
-      text-transform: uppercase;
-      color: #fff;
-      background: none;
-      border: none;
-      cursor: pointer;
-      padding: 0 1.2em;
-      position: relative;
-      opacity: 0;
-      animation: rise 1s ease 1s forwards;
-    }
-
-    .e-btn::before {
-      content: '[';
-      position: absolute;
-      left: 0;
-      color: var(--orange);
-    }
-
-    .e-btn::after {
-      content: ']';
-      position: absolute;
-      right: 0;
-      color: var(--orange);
-    }
-
-    .e-btn:hover {
-      color: var(--orange);
-    }
-
-    /* NAV */
-    nav {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      z-index: 500;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 1.5rem 2rem;
-      pointer-events: none;
-      background: linear-gradient(to bottom, rgba(0,0,0,0.28) 0%, transparent 100%);
-    }
-
-    nav * {
-      pointer-events: auto;
-    }
-
-    .nav-logo {
-      font-family: 'Space Grotesk';
-      font-weight: 700;
-      font-size: .95rem;
-      letter-spacing: .12em;
-      color: #fff;
-      text-decoration: none;
-      text-transform: uppercase;
-    }
-
-    .nav-logo b {
-      color: var(--orange);
-    }
-
-    .nav-frame {
-      font-size: .78rem;
-      letter-spacing: .2em;
-      color: #fff;
-      opacity: .6;
-    }
-
-    .nav-menu-btn {
-      font-family: 'Space Grotesk';
-      font-weight: 600;
-      font-size: .78rem;
-      letter-spacing: .25em;
-      text-transform: uppercase;
-      color: #fff;
-      background: none;
-      border: none;
-      cursor: pointer;
-    }
-
-    .nav-menu-btn:hover {
-      color: var(--orange);
-    }
-
-    /* MENU */
-    .menu-ov {
-      position: fixed;
-      inset: 0;
-      background: var(--black);
-      z-index: 600;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      opacity: 0;
-      visibility: hidden;
-      transition: opacity .45s, visibility .45s;
-    }
-
-    .menu-ov.open {
-      opacity: 1;
-      visibility: visible;
-    }
-
-    .menu-close {
-      position: absolute;
-      top: 1.5rem;
-      right: 2rem;
-      font-size: .78rem;
-      letter-spacing: .25em;
-      text-transform: uppercase;
-      color: #fff;
-      background: none;
-      border: none;
-      cursor: pointer;
-    }
-
-    .menu-close:hover {
-      color: var(--orange);
-    }
-
-    .menu-links {
-      list-style: none;
-      text-align: center;
-    }
-
-    .menu-links li {
-      overflow: hidden;
-      margin-bottom: .2rem;
-    }
-
-    .menu-links a {
-      font-family: 'Bebas Neue';
-      font-size: clamp(3.5rem, 11vw, 8.5rem);
-      letter-spacing: .03em;
-      color: #fff;
-      text-decoration: none;
-      display: block;
-      transform: translateY(110%);
-      transition: transform .55s cubic-bezier(.16, 1, .3, 1), color .3s;
-    }
-
-    .menu-ov.open .menu-links a {
-      transform: translateY(0);
-    }
-
-    .menu-links li:nth-child(1) a {
-      transition-delay: .07s;
-    }
-
-    .menu-links li:nth-child(2) a {
-      transition-delay: .12s;
-    }
-
-    .menu-links li:nth-child(3) a {
-      transition-delay: .17s;
-    }
-
-    .menu-links li:nth-child(4) a {
-      transition-delay: .22s;
-    }
-
-    .menu-links li:nth-child(5) a {
-      transition-delay: .27s;
-    }
-
-    .menu-links a:hover {
-      color: var(--orange);
-    }
-
-    .menu-logout {
-      position: absolute;
-      bottom: 2.5rem;
-      left: 50%;
-      transform: translateX(-50%);
-      font-family: 'Space Grotesk';
-      font-weight: 600;
-      font-size: .68rem;
-      letter-spacing: .28em;
-      text-transform: uppercase;
-      color: rgba(255, 255, 255, .3);
-      background: none;
-      border: 1px solid rgba(255, 255, 255, .12);
-      padding: .5rem 1.5rem;
-      cursor: pointer;
-      transition: color .25s, border-color .25s;
-      white-space: nowrap;
-    }
-
-    .menu-logout:hover {
-      color: var(--orange);
-      border-color: var(--orange);
-    }
-
-    @media(hover:none) {
-      .menu-logout {
-        cursor: pointer;
-      }
-    }
-
-    main {
-      opacity: 0;
-      transition: opacity .35s ease;
-    }
-
-    main.show {
-      opacity: 1;
-    }
-
-    /* HERO */
-    #hero {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: #E85D04;
-    }
-    .hero-inner {
-      text-align: center;
-      color: #fff;
-    }
-    .hero-inner h1 {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: clamp(4rem, 12vw, 10rem);
-      line-height: 1;
-      letter-spacing: 0.05em;
-      margin: 0 0 0.5rem;
-    }
-    .hero-inner h1 b { color: #1a1a1a; }
-    .hero-inner p {
-      font-family: 'Space Grotesk', sans-serif;
-      font-size: clamp(0.8rem, 2vw, 1rem);
-      letter-spacing: 0.3em;
-      text-transform: uppercase;
-      opacity: 0.8;
-    }
-
-    /* MANIFESTO */
-    #manifesto {
-      position: relative;
-      padding: 12vh 0 14vh;
-    }
-
-    .mf-line {
-      display: block;
-      overflow: hidden;
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: clamp(4.5rem, 20vw, 17rem);
-      line-height: 1;
-      color: var(--black);
-      padding: .5vh 0;
-    }
-
-    .mf-line span {
-      display: block;
-      transform: translateY(110%);
-      transition: transform 1s cubic-bezier(.16, 1, .3, 1);
-    }
-
-    .mf-line.left {
-      text-align: left;
-      padding-left: 2vw;
-    }
-
-    .mf-line.right {
-      text-align: right;
-      padding-right: 2vw;
-    }
-
-    .mf-line.center {
-      text-align: center;
-    }
-
-    .mf-line.show span {
-      transform: translateY(0);
-    }
-
-    .mf-line:nth-child(1) span {
-      transition-delay: 0s
-    }
-
-    .mf-line:nth-child(2) span {
-      transition-delay: .04s
-    }
-
-    .mf-line:nth-child(3) span {
-      transition-delay: .08s
-    }
-
-    .mf-line:nth-child(4) span {
-      transition-delay: .12s
-    }
-
-    .mf-line:nth-child(5) span {
-      transition-delay: .16s
-    }
-
-    .mf-line:nth-child(6) span {
-      transition-delay: .20s
-    }
-
-    .mf-line:nth-child(7) span {
-      transition-delay: .24s
-    }
-
-    .mf-line:nth-child(8) span {
-      transition-delay: .28s
-    }
-
-    .mf-line:nth-child(9) span {
-      transition-delay: .32s
-    }
-
-    .mf-line:nth-child(10) span {
-      transition-delay: .36s
-    }
-
-    .mf-line:nth-child(11) span {
-      transition-delay: .40s
-    }
-
-    .mf-line:nth-child(12) span {
-      transition-delay: .44s
-    }
-
-    .mf-line:nth-child(13) span {
-      transition-delay: .48s
-    }
-
-    .mf-line:nth-child(14) span {
-      transition-delay: .52s
-    }
-
-    .mf-line:nth-child(15) span {
-      transition-delay: .56s
-    }
-
-    /* SERVICES */
-    .svc {
-      min-height: 100vh;
-      position: relative;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .svc-visual {
-      flex: 1;
-      min-height: 52vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-    }
-
-    .svc-tag {
-      position: absolute;
-      top: 6.5rem;
-      left: 2rem;
-      font-size: .68rem;
-      letter-spacing: .25em;
-      text-transform: uppercase;
-      opacity: .6;
-    }
-
-    .on-orange .svc-tag {
-      color: var(--black);
-    }
-
-    .on-dark .svc-tag {
-      color: #fff;
-    }
-
-    .sh-ast {
-      width: min(280px, 62vw);
-      height: min(280px, 62vw);
-      position: relative;
-      animation: spin 28s linear infinite;
-      will-change: transform;
-    }
-
-    .sh-ast::before,
-    .sh-ast::after,
-    .sh-ast .b3 {
-      content: '';
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 88%;
-      height: 22%;
-      background: var(--black);
-      border-radius: 10px;
-    }
-
-    .sh-ast::before {
-      transform: translate(-50%, -50%) rotate(0deg);
-    }
-
-    .sh-ast::after {
-      transform: translate(-50%, -50%) rotate(60deg);
-    }
-
-    .sh-ast .b3 {
-      display: block;
-      transform: translate(-50%, -50%) rotate(120deg);
-    }
-
-    .sh-cross {
-      width: min(260px, 58vw);
-      height: min(260px, 58vw);
-      position: relative;
-      animation: spin 22s linear infinite reverse;
-      will-change: transform;
-    }
-
-    .sh-cross::before,
-    .sh-cross::after {
-      content: '';
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      background: #fff;
-      border-radius: 14px;
-    }
-
-    .sh-cross::before {
-      width: 22%;
-      height: 92%;
-      transform: translate(-50%, -50%);
-    }
-
-    .sh-cross::after {
-      width: 92%;
-      height: 22%;
-      transform: translate(-50%, -50%);
-    }
-
-    .sh-ring {
-      width: min(260px, 58vw);
-      height: min(260px, 58vw);
-      border-radius: 50%;
-      border: clamp(22px, 5vw, 42px) solid var(--black);
-      animation: spin 18s linear infinite;
-      position: relative;
-      will-change: transform;
-    }
-
-    .sh-ring::before {
-      content: '';
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 38%;
-      height: 38%;
-      border-radius: 50%;
-      border: clamp(8px, 2vw, 14px) solid var(--black);
-      transform: translate(-50%, -50%);
-    }
-
-    .svc-bottom {
-      padding: 2rem 2rem 3.5rem;
-      border-top: 1px solid;
-    }
-
-    .on-orange .svc-bottom {
-      border-color: rgba(0, 0, 0, .15);
-    }
-
-    .on-dark .svc-bottom {
-      border-color: rgba(255, 255, 255, .1);
-    }
-
-    .svc-num,
-    .svc-title {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: clamp(3rem, 10vw, 7.5rem);
-      line-height: .88;
-      display: block;
-      transform: translateY(55px);
-      opacity: 0;
-      transition: transform .85s cubic-bezier(.16, 1, .3, 1), opacity .85s ease;
-    }
-
-    .svc-title {
-      transition-delay: .07s;
-    }
-
-    .svc-desc {
-      margin-top: 1.6rem;
-      font-size: .76rem;
-      letter-spacing: .07em;
-      line-height: 1.95;
-      text-transform: uppercase;
-      transform: translateY(35px);
-      opacity: 0;
-      transition: transform .85s ease .17s, opacity .85s ease .17s;
-    }
-
-    .svc-bottom.go .svc-num,
-    .svc-bottom.go .svc-title,
-    .svc-bottom.go .svc-desc {
-      transform: translateY(0);
-      opacity: 1;
-    }
-
-    .on-orange .svc-num,
-    .on-orange .svc-title,
-    .on-orange .svc-desc {
-      color: var(--black);
-    }
-
-    .on-dark .svc-num,
-    .on-dark .svc-title,
-    .on-dark .svc-desc {
-      color: #fff;
-    }
-
-    .pw {
-      will-change: transform;
-    }
-
-    /* BOOKS */
-    #books {
-      padding: 10vh 2rem 8vh;
-    }
-
-    .sec-label {
-      font-size: .68rem;
-      letter-spacing: .3em;
-      text-transform: uppercase;
-      color: var(--orange);
-      margin-bottom: .8rem;
-    }
-
-    .sec-head {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: clamp(3rem, 10vw, 7rem);
-      line-height: .88;
-      color: #fff;
-      margin-bottom: 2.5rem;
-    }
-
-    .cats {
-      display: flex;
-      gap: .6rem;
-      flex-wrap: wrap;
-      margin-bottom: 3rem;
-    }
-
-    .cat-btn {
-      font-family: 'Space Grotesk';
-      font-weight: 600;
-      font-size: .68rem;
-      letter-spacing: .18em;
-      text-transform: uppercase;
-      color: rgba(255, 255, 255, .4);
-      background: none;
-      border: 1px solid rgba(255, 255, 255, .12);
-      padding: .5rem 1rem;
-      cursor: pointer;
-      transition: color .25s, border-color .25s, background .25s;
-    }
-
-    .cat-btn:hover {
-      color: #fff;
-      border-color: rgba(255, 255, 255, .4);
-    }
-
-    .cat-btn.active {
-      color: var(--orange);
-      border-color: var(--orange);
-      background: rgba(232, 93, 4, .08);
-    }
-
-    @media (hover:none) {
-      .cat-btn {
-        cursor: pointer;
-      }
-    }
-
-    .books-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 1.2rem;
-      transition: opacity .25s ease, transform .25s ease;
-    }
-
-    @media(min-width:680px) {
-      .books-grid {
-        grid-template-columns: repeat(3, 1fr);
-      }
-    }
-
-    @media(min-width:1024px) {
-      .books-grid {
-        grid-template-columns: repeat(4, 1fr);
-      }
-    }
-
-    .bk {
-      opacity: 0;
-      transform: translateY(50px);
-      transition: opacity .6s ease, transform .6s ease;
-      cursor: pointer;
-    }
-
-    .bk.go {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    @media (hover:none) {
-      .bk {
-        cursor: pointer;
-      }
-    }
-
-    .bk-cover {
-      aspect-ratio: 2/3;
-      position: relative;
-      overflow: hidden;
-      display: flex;
-      align-items: flex-end;
-      padding: 1rem;
-      transition: transform .5s ease;
-    }
-
-    .bk:hover .bk-cover {
-      transform: scale(1.04);
-    }
-
-    .bk-cover::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(to bottom, transparent 40%, rgba(0, 0, 0, .68));
-    }
-
-    .bk.scorched .bk-cover {
-      filter: saturate(.62) contrast(1.28) brightness(.72);
-      box-shadow:
-        inset 0 0 55px rgba(0, 0, 0, .92),
-        inset 0 -32px 70px rgba(232, 93, 4, .30),
-        inset 0 0 20px rgba(180, 40, 0, .18),
-        0 22px 55px rgba(0, 0, 0, .72),
-        0 4px 18px rgba(232, 93, 4, .15);
-    }
-
-    .bk.scorched .bk-cover::before {
-      content: '';
-      position: absolute;
-      inset: -12%;
-      z-index: 2;
-      pointer-events: none;
-      opacity: .92;
-      background:
-        radial-gradient(circle at 8% 6%,  rgba(0, 0, 0, .97) 0 10%, transparent 22%),
-        radial-gradient(circle at 88% 8%,  rgba(6, 2, 0, .90) 0 12%, transparent 26%),
-        radial-gradient(circle at 55% 92%, rgba(0, 0, 0, .84) 0 14%, transparent 30%),
-        radial-gradient(circle at 4% 72%,  rgba(0, 0, 0, .78) 0 9%,  transparent 20%),
-        radial-gradient(circle at 92% 68%, rgba(4, 1, 0, .72) 0 8%,  transparent 18%),
-        linear-gradient(138deg, transparent 0 28%, rgba(255, 103, 0, .18) 30%, rgba(0, 0, 0, .88) 38%, transparent 46%),
-        linear-gradient(218deg, transparent 0 38%, rgba(200, 60, 0, .12) 40%, rgba(0, 0, 0, .70) 46%, transparent 56%);
-      mix-blend-mode: multiply;
-    }
-
-    .bk.scorched .bk-cover::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      z-index: 3;
-      pointer-events: none;
-      border-radius: inherit;
-      opacity: .65;
-      box-shadow:
-        inset 0 0 0 1.5px rgba(255, 80, 0, .38),
-        inset 0 0 12px rgba(255, 60, 0, .22),
-        inset 0 -4px 18px rgba(255, 120, 0, .28);
-    }
-
-    .bk-n {
-      font-family: 'Bebas Neue';
-      font-size: 5.5rem;
-      color: rgba(255, 255, 255, .07);
-      position: absolute;
-      top: -.5rem;
-      right: .3rem;
-      line-height: 1;
-    }
-
-    .bk-title {
-      font-family: 'Playfair Display', serif;
-      font-size: 1rem;
-      color: #fff;
-      line-height: 1.25;
-      position: relative;
-      z-index: 1;
-    }
-
-    .bk-info {
-      padding: .8rem 0;
-    }
-
-    .bk-author {
-      font-size: .66rem;
-      letter-spacing: .15em;
-      text-transform: uppercase;
-      color: var(--orange);
-    }
-
-    .bk-genre {
-      font-size: .7rem;
-      color: rgba(255, 255, 255, .3);
-      margin-top: .2rem;
-    }
-
-    /* CTA */
-    #cta {
-      min-height: 85vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      padding: 5rem 2rem;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .cta-h {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: clamp(5rem, 19vw, 14rem);
-      line-height: .82;
-      color: var(--black);
-      margin-bottom: 3.5rem;
-      transform: translateY(70px);
-      opacity: 0;
-      transition: transform 1.1s cubic-bezier(.16, 1, .3, 1), opacity 1.1s ease;
-    }
-
-    .cta-h.go {
-      transform: translateY(0);
-      opacity: 1;
-    }
-
-    .cta-link {
-      display: inline-block;
-      font-family: 'Space Grotesk';
-      font-weight: 600;
-      font-size: .78rem;
-      letter-spacing: .35em;
-      text-transform: uppercase;
-      color: var(--black);
-      border: 2px solid var(--black);
-      padding: 1.1rem 3.2rem;
-      text-decoration: none;
-      cursor: pointer;
-      position: relative;
-      overflow: hidden;
-      transition: color .35s;
-    }
-
-    .cta-link::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: var(--black);
-      transform: scaleX(0);
-      transform-origin: left;
-      transition: transform .35s ease;
-    }
-
-    .cta-link:hover {
-      color: #fff;
-    }
-
-    .cta-link:hover::before {
-      transform: scaleX(1);
-    }
-
-    .cta-link span {
-      position: relative;
-      z-index: 1;
-    }
-
-    @media (hover:none) {
-      .cta-link {
-        cursor: pointer;
-      }
-    }
-
-    .cta-note {
-      margin-top: 1.8rem;
-      font-size: .73rem;
-      letter-spacing: .08em;
-      color: var(--black);
-      opacity: .5;
-    }
-
-    .band {
-      position: absolute;
-      bottom: 2rem;
-      left: 0;
-      width: 200%;
-      overflow: hidden;
-      white-space: nowrap;
-      pointer-events: none;
-    }
-
-    .band-in {
-      display: inline-block;
-      font-family: 'Bebas Neue';
-      font-size: clamp(2.5rem, 6vw, 5rem);
-      color: rgba(0, 0, 0, .07);
-      letter-spacing: .06em;
-      animation: marquee 18s linear infinite;
-    }
-
-    /* FOOTER */
-    footer {
-      padding: 4rem 2rem 3rem;
-      border-top: 1px solid rgba(255, 255, 255, .07);
-    }
-
-    .ft-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 3rem;
-      flex-wrap: wrap;
-      gap: 2rem;
-    }
-
-    .ft-logo {
-      font-family: 'Space Grotesk';
-      font-weight: 700;
-      font-size: 1.6rem;
-      letter-spacing: .06em;
-      color: #fff;
-    }
-
-    .ft-logo b {
-      color: var(--orange);
-    }
-
-    .ft-links {
-      display: flex;
-      flex-direction: column;
-      gap: .6rem;
-    }
-
-    .ft-links a {
-      font-size: .73rem;
-      letter-spacing: .12em;
-      text-transform: uppercase;
-      color: rgba(255, 255, 255, .35);
-      text-decoration: none;
-      transition: color .3s;
-    }
-
-    .ft-links a:hover {
-      color: var(--orange);
-    }
-
-    .ft-bot {
-      display: flex;
-      justify-content: space-between;
-      font-size: .63rem;
-      letter-spacing: .1em;
-      color: rgba(255, 255, 255, .18);
-      flex-wrap: wrap;
-      gap: .5rem;
-    }
-
-    /* ══════════════════════════════════════
-       MODAL BASE
-    ══════════════════════════════════════ */
-    .modal-ov {
-      position: fixed;
-      inset: 0;
-      z-index: 800;
-      background: rgba(5, 3, 1, 0);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      opacity: 0;
-      visibility: hidden;
-      transition: opacity .5s ease, visibility .5s ease, background .7s ease;
-    }
-
-    @media(max-width:679px) {
-      .modal-ov {
-        align-items: flex-end;
-      }
-
-    }
-
-    @media(max-width:899px) {
-      #book-modal.modal-ov {
-        align-items: flex-start !important;
-        overflow-y: auto;
-        -webkit-overflow-scrolling: touch;
-        padding:
-          max(4.4rem, calc(env(safe-area-inset-top) + 3.4rem))
-          0
-          max(6.8rem, calc(env(safe-area-inset-bottom) + 5.6rem));
-      }
-    }
-
-    .modal-ov.open {
-      opacity: 1;
-      visibility: visible;
-      background: rgba(5, 3, 1, .94);
-    }
-
-    .mx {
-      position: absolute;
-      top: -2.6rem;
-      right: 0;
-      font-size: .66rem;
-      letter-spacing: .3em;
-      text-transform: uppercase;
-      color: rgba(255, 255, 255, .35);
-      background: none;
-      border: none;
-      cursor: pointer;
-      z-index: 20;
-      transition: color .25s;
-    }
-
-    .mx:hover {
-      color: var(--orange);
-    }
-
-    @media (hover:none) {
-      .mx {
-        cursor: pointer;
-      }
-    }
-
-    /* ══════════════════════════════════════
-       REGISTER — REALISTIC 3D BOOK
-    ══════════════════════════════════════ */
-
-    /* Scene: provides perspective */
-    .reg-scene {
-      position: relative;
-      width: min(430px, 100vw);
-      opacity: 0;
-      transform: translateY(70px);
-      transition: transform .65s cubic-bezier(.16, 1, .3, 1) .08s, opacity .5s ease .08s;
-    }
-
-    .modal-ov.open .reg-scene {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    /* Warm ambient glow behind book */
-    .reg-scene::before {
-      content: '';
-      position: absolute;
-      inset: -60px;
-      background: radial-gradient(ellipse at 50% 60%, rgba(232, 93, 4, .09) 0%, transparent 68%);
-      pointer-events: none;
-      opacity: 0;
-      transition: opacity 1s ease .4s;
-    }
-
-    .modal-ov.open .reg-scene::before {
-      opacity: 1;
-    }
-
-    @media(min-width:680px) {
-      .reg-scene {
-        width: auto;
-        perspective: 2200px;
-        perspective-origin: 50% 46%;
-        transform: scale(.88) translateY(22px);
-        transition: transform .8s cubic-bezier(.16, 1, .3, 1), opacity .6s ease;
-      }
-
-      .modal-ov.open .reg-scene {
-        transform: scale(1) translateY(0);
-      }
-    }
-
-    /* ── The Book ── */
-    .book-3d {
-      position: relative;
-      transform-style: preserve-3d;
-    }
-
-    /* MOBILE: flat card */
-    .book-3d {
-      width: 100%;
-      border-radius: 20px 20px 0 0;
-      overflow: hidden;
-      background: #0c0a09;
-      box-shadow: 0 -10px 50px rgba(0, 0, 0, .5);
-    }
-
-    @media(min-width:680px) {
-      .book-3d {
-        width: 400px;
-        height: 560px;
-        border-radius: 0 4px 4px 0;
-        overflow: visible;
-        background: transparent;
-        /* Initial tilt: book resting at angle on a surface */
-        transform: rotateX(7deg) rotateY(-12deg);
-        transition: transform 1.2s cubic-bezier(.25, .08, .25, 1);
-        filter:
-          drop-shadow(0 55px 90px rgba(0, 0, 0, .98)) drop-shadow(0 18px 35px rgba(0, 0, 0, .7)) drop-shadow(-8px 4px 18px rgba(0, 0, 0, .55));
-      }
-
-      .book-3d.book-open {
-        transform: rotateX(0deg) rotateY(0deg);
-        filter:
-          drop-shadow(0 65px 110px rgba(0, 0, 0, .92)) drop-shadow(0 0 50px rgba(0, 0, 0, .45));
-      }
-
-      /* Page stack visible on right edge (cream/ivory pages) */
-      .book-3d::before {
-        content: '';
-        position: absolute;
-        top: 4px;
-        right: -16px;
-        bottom: 4px;
-        width: 16px;
-        border-radius: 0 3px 3px 0;
-        background:
-          repeating-linear-gradient(to bottom,
-            #e8e2d6 0px, #e8e2d6 1.5px,
-            #ddd7cc 1.5px, #ddd7cc 3px);
-        box-shadow: inset -3px 0 7px rgba(0, 0, 0, .28), inset 1px 0 2px rgba(255, 255, 255, .35);
-      }
-
-      /* Bottom edge */
-      .book-3d::after {
-        content: '';
-        position: absolute;
-        bottom: -14px;
-        left: 5px;
-        right: -14px;
-        height: 14px;
-        border-radius: 0 0 3px 0;
-        background: linear-gradient(to bottom, #ddd8cf, #c8c2b6);
-        box-shadow: 0 5px 10px rgba(0, 0, 0, .45);
-      }
-    }
-
-    /* ── Cover flip ── */
-    .book-flip {
-      display: none;
-    }
-
-    @media(min-width:680px) {
-      .book-flip {
-        display: block;
-        position: absolute;
-        inset: 0;
-        transform-style: preserve-3d;
-        transform-origin: left center;
-        transform: rotateY(0deg);
-        /* Realistic book-open easing: fast in middle, soft landing */
-        transition: transform 1.4s cubic-bezier(.6, .02, .4, 1);
-        z-index: 5;
-      }
-
-      .book-3d.book-open .book-flip {
-        transform: rotateY(-180deg);
-      }
-    }
-
-    .bface {
-      position: absolute;
-      inset: 0;
-      backface-visibility: hidden;
-    }
-
-    /* ── FRONT COVER ── */
-    .bface-front {
-      border-radius: 0 4px 4px 0;
-      border-left: 8px solid var(--orange);
-      border-top: 1px solid rgba(255, 255, 255, .07);
-      border-right: 1px solid rgba(255, 255, 255, .04);
-      border-bottom: 1px solid rgba(255, 255, 255, .04);
-      display: flex;
-      flex-direction: column;
-      padding: 2.5rem 2.2rem 2rem;
-      overflow: hidden;
-      /* Linen/cloth book cover texture */
-      background:
-        repeating-linear-gradient(45deg,
-          transparent, transparent 3px,
-          rgba(255, 255, 255, .006) 3px, rgba(255, 255, 255, .006) 6px),
-        repeating-linear-gradient(-45deg,
-          transparent, transparent 3px,
-          rgba(255, 255, 255, .004) 3px, rgba(255, 255, 255, .004) 6px),
-        linear-gradient(160deg, #110d0a 0%, #0c0907 55%, #0f0c09 100%);
-    }
-
-    /* Subtle sheen light from top-left */
-    .bface-front::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 8px;
-      width: 55%;
-      height: 100%;
-      background: linear-gradient(to right, rgba(255, 255, 255, .032) 0%, transparent 100%);
-      pointer-events: none;
-    }
-
-    /* Top rule (embossed spine continuation) */
-    .bface-front::after {
-      content: '';
-      position: absolute;
-      top: 5.4rem;
-      left: 8px;
-      right: 0;
-      height: 1px;
-      background: linear-gradient(to right, rgba(232, 93, 4, .65) 0%, rgba(232, 93, 4, .2) 40%, transparent 100%);
-    }
-
-    /* Cover top bar */
-    .cov-top-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: auto;
-      padding-bottom: 1rem;
-    }
-
-    .cov-logo-sm {
-      font-family: 'Space Grotesk';
-      font-weight: 700;
-      font-size: .6rem;
-      letter-spacing: .22em;
-      text-transform: uppercase;
-      color: rgba(255, 255, 255, .16);
-    }
-
-    .cov-logo-sm b {
-      color: rgba(232, 93, 4, .5);
-    }
-
-    .cov-tag {
-      font-size: .55rem;
-      letter-spacing: .22em;
-      text-transform: uppercase;
-      color: rgba(255, 255, 255, .1);
-    }
-
-    /* Ornamental seal */
-    .cov-seal {
-      width: 108px;
-      height: 108px;
-      border: 1px solid rgba(232, 93, 4, .22);
-      border-radius: 50%;
-      margin: 0 auto 1.7rem;
-      position: relative;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .cov-seal::before {
-      content: '';
-      position: absolute;
-      inset: 9px;
-      border: 1px solid rgba(232, 93, 4, .1);
-      border-radius: 50%;
-    }
-
-    .cov-seal::after {
-      content: '◆';
-      font-size: 1.55rem;
-      line-height: 1;
-      color: rgba(232, 93, 4, .32);
-    }
-
-    /* Main title */
-    .cov-title-text {
-      font-family: 'Playfair Display', serif;
-      font-size: 2.85rem;
-      line-height: .86;
-      color: #fff;
-      font-style: italic;
-      text-align: center;
-      letter-spacing: -.01em;
-      margin-bottom: .7rem;
-    }
-
-    /* Ornamental divider */
-    .cov-orn {
-      display: flex;
-      align-items: center;
-      gap: .65rem;
-      margin: 1rem 0;
-    }
-
-    .cov-orn-line {
-      flex: 1;
-      height: 1px;
-    }
-
-    .cov-orn-line:first-child {
-      background: linear-gradient(to right, transparent, rgba(255, 255, 255, .1));
-    }
-
-    .cov-orn-line:last-child {
-      background: linear-gradient(to left, transparent, rgba(255, 255, 255, .1));
-    }
-
-    .cov-orn-dot {
-      font-size: .45rem;
-      color: rgba(232, 93, 4, .38);
-    }
-
-    .cov-subtitle {
-      font-size: .56rem;
-      letter-spacing: .32em;
-      text-transform: uppercase;
-      color: rgba(255, 255, 255, .18);
-      text-align: center;
-    }
-
-    /* Footer */
-    .cov-footer {
-      margin-top: auto;
-      padding-top: 1.4rem;
-      border-top: 1px solid rgba(255, 255, 255, .05);
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-end;
-    }
-
-    .cov-foot-l {
-      font-size: .52rem;
-      letter-spacing: .2em;
-      text-transform: uppercase;
-      color: rgba(255, 255, 255, .14);
-    }
-
-    .cov-foot-r {
-      font-size: .52rem;
-      letter-spacing: .18em;
-      text-transform: uppercase;
-      color: rgba(232, 93, 4, .28);
-    }
-
-    /* Watermark */
-    /* ── BACK OF COVER (inside front cover, seen mid-flip) ── */
-    .bface-back {
-      background:
-        linear-gradient(160deg, rgba(255, 255, 255, .018) 0%, transparent 55%),
-        #100d0a;
-      border-left: 8px solid rgba(232, 93, 4, .16);
-      border-radius: 0 4px 4px 0;
-      transform: rotateY(180deg);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 3rem 2.5rem;
-    }
-
-    .bback-inner {
-      text-align: center;
-    }
-
-    .bback-ornament {
-      display: block;
-      font-size: 1.9rem;
-      color: rgba(232, 93, 4, .22);
-      margin-bottom: 1.8rem;
-    }
-
-    .bback-quote {
-      font-family: 'Playfair Display', serif;
-      font-style: italic;
-      font-size: 1.07rem;
-      line-height: 1.68;
-      color: rgba(255, 255, 255, .28);
-      margin-bottom: 1.5rem;
-    }
-
-    .bback-attr {
-      font-size: .6rem;
-      letter-spacing: .22em;
-      text-transform: uppercase;
-      color: rgba(255, 255, 255, .14);
-    }
-
-    /* ── FORM PAGE (always behind cover) ── */
-    .book-form-page {
-      position: relative;
-      z-index: 1;
-      background: #0c0a09;
-      border-left: 8px solid var(--orange);
-      border-radius: 0 4px 4px 0;
-    }
-
-    @media(min-width:680px) {
-      .book-form-page {
-        position: absolute;
-        inset: 0;
-        overflow-y: auto;
-        background:
-          linear-gradient(160deg, rgba(255, 255, 255, .02) 0%, transparent 45%),
-          #0c0a09;
-      }
-    }
-
-    /* Mobile header strip */
-    .mobile-cov-strip {
-      background: var(--orange);
-      padding: 2rem 1.8rem 1.6rem;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .mobile-cov-strip::after {
-      content: 'BOOKBLIND';
-      position: absolute;
-      bottom: -2rem;
-      right: -.5rem;
-      font-family: 'Bebas Neue';
-      font-size: 5.5rem;
-      color: rgba(0, 0, 0, .1);
-      letter-spacing: .03em;
-      pointer-events: none;
-    }
-
-    .mcov-logo {
-      font-family: 'Space Grotesk';
-      font-weight: 700;
-      font-size: .68rem;
-      letter-spacing: .16em;
-      text-transform: uppercase;
-      color: rgba(0, 0, 0, .4);
-      margin-bottom: .5rem;
-    }
-
-    .mcov-title {
-      font-family: 'Bebas Neue';
-      font-size: 2.8rem;
-      line-height: .85;
-      color: var(--black);
-    }
-
-    @media(min-width:680px) {
-      .mobile-cov-strip {
-        display: none;
-      }
-    }
-
-    /* Form body */
-    .bfp-body {
-      padding: 2.2rem 2rem 2.8rem;
-    }
-
-    @media(min-width:680px) {
-      .bfp-body {
-        padding: 2.8rem 2.4rem;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-      }
-    }
-
-    /* Desktop form header */
-    .bfp-header {
-      display: none;
-      margin-bottom: 1.8rem;
-    }
-
-    @media(min-width:680px) {
-      .bfp-header {
-        display: block;
-        opacity: 0;
-        transform: translateY(14px);
-        transition: opacity .55s ease .88s, transform .55s ease .88s;
-      }
-
-      .book-3d.book-open .bfp-header {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .bfp-logo-sm {
-      font-size: .63rem;
-      letter-spacing: .2em;
-      text-transform: uppercase;
-      color: rgba(255, 255, 255, .2);
-      margin-bottom: .55rem;
-    }
-
-    .bfp-logo-sm b {
-      color: var(--orange);
-    }
-
-    .bfp-title {
-      font-family: 'Bebas Neue';
-      font-size: 3rem;
-      line-height: .82;
-      color: #fff;
-    }
-
-    /* Form fields */
-    .field-w {
-      position: relative;
-      margin-bottom: .9rem;
-    }
-
-    .field-i {
-      width: 100%;
-      background: rgba(255, 255, 255, .04);
-      border: 1px solid rgba(255, 255, 255, .1);
-      border-radius: 2px;
-      padding: 1.3rem 1rem .5rem;
-      font-family: 'Space Grotesk';
-      font-size: .88rem;
-      color: #fff;
-      outline: none;
-      appearance: none;
-      transition: border-color .25s, background .25s;
-    }
-
-    .field-i:focus {
-      border-color: var(--orange);
-      background: rgba(232, 93, 4, .03);
-    }
-
-    .field-l {
-      position: absolute;
-      top: 50%;
-      left: 1rem;
-      transform: translateY(-50%);
-      font-size: .84rem;
-      color: rgba(255, 255, 255, .3);
-      pointer-events: none;
-      transition: all .22s ease;
-    }
-
-    .field-i:focus~.field-l,
-    .field-i:not(:placeholder-shown)~.field-l {
-      top: .5rem;
-      transform: translateY(0);
-      font-size: .58rem;
-      letter-spacing: .12em;
-      text-transform: uppercase;
-      color: var(--orange);
-    }
-
-    /* Staggered field reveal */
-    @media(min-width:680px) {
-      .field-w {
-        opacity: 0;
-        transform: translateY(10px);
-        transition: opacity .45s ease, transform .45s ease;
-      }
-
-      .field-w:nth-child(1) {
-        transition-delay: .9s;
-      }
-
-      .field-w:nth-child(2) {
-        transition-delay: .98s;
-      }
-
-      .field-w:nth-child(3) {
-        transition-delay: 1.06s;
-      }
-
-      .book-3d.book-open .field-w {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .reg-submit {
-      width: 100%;
-      margin-top: 1.1rem;
-      padding: 1.05rem;
-      font-family: 'Space Grotesk';
-      font-weight: 700;
-      font-size: .73rem;
-      letter-spacing: .3em;
-      text-transform: uppercase;
-      background: var(--orange);
-      color: var(--black);
-      border: none;
-      cursor: pointer;
-      border-radius: 2px;
-      transition: background .25s, color .25s;
-    }
-
-    .reg-submit:hover {
-      background: #fff;
-    }
-
-    @media (hover:none) {
-      .reg-submit {
-        cursor: pointer;
-      }
-    }
-
-    @media(min-width:680px) {
-      .reg-submit {
-        opacity: 0;
-        transform: translateY(10px);
-        transition: opacity .45s ease 1.14s, transform .45s ease 1.14s, background .25s, color .25s;
-      }
-
-      .book-3d.book-open .reg-submit {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .reg-note {
-      margin-top: 1.1rem;
-      text-align: center;
-      font-size: .7rem;
-      color: rgba(255, 255, 255, .3);
-    }
-
-    .reg-note a {
-      color: var(--orange);
-      text-decoration: none;
-    }
-
-    @media(min-width:680px) {
-      .reg-note {
-        opacity: 0;
-        transition: opacity .45s ease 1.22s;
-      }
-
-      .book-3d.book-open .reg-note {
-        opacity: 1;
-      }
-    }
-
-    /* Auth error */
-    #reg-error {
-      font-size: .72rem;
-      color: #c0392b;
-      letter-spacing: .03em;
-      line-height: 1.5;
-      padding: .1rem 0;
-    }
-
-    /* Success */
-    .reg-success {
-      display: none;
-      text-align: center;
-      padding: .5rem 0 1rem;
-    }
-
-    .reg-success .chk {
-      width: 48px;
-      height: 48px;
-      border-radius: 50%;
-      background: var(--orange);
-      color: var(--black);
-      font-size: 1.4rem;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 1rem;
-      animation: popIn .4s cubic-bezier(.16, 1, .3, 1);
-    }
-
-    .reg-success p {
-      color: rgba(255, 255, 255, .6);
-      font-size: .84rem;
-      line-height: 1.55;
-    }
-
-    /* ══════════════════════════════════════
-       BOOK READER MODAL
-    ══════════════════════════════════════ */
-
-    /* Scene + topbar */
-    .br-scene {
-      position: relative;
-      opacity: 0;
-      transform: scale(.88) translateY(24px);
-      transition: transform .8s cubic-bezier(.16, 1, .3, 1), opacity .6s ease;
-    }
-
-    .modal-ov.open .br-scene {
-      opacity: 1;
-      transform: scale(1) translateY(0);
-    }
-
-    .br-topbar {
-      position: absolute;
-      top: -2.8rem;
-      left: 0;
-      right: 0;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .br-close-btn,
-    .br-logout-btn {
-      font-size: .65rem;
-      letter-spacing: .28em;
-      text-transform: uppercase;
-      color: rgba(255, 255, 255, .35);
-      background: none;
-      border: none;
-      cursor: pointer;
-      transition: color .25s;
-    }
-
-    .br-close-btn:hover,
-    .br-logout-btn:hover {
-      color: var(--orange);
-    }
-
-    @media(hover:none) {
-
-      .br-close-btn,
-      .br-logout-btn {
-        cursor: pointer;
-      }
-    }
-
-    /* The open book */
-    .br-book {
-      position: relative;
-      display: flex;
-      border-radius: 4px;
-      box-shadow: 0 60px 130px rgba(0, 0, 0, .95), 0 20px 50px rgba(0, 0, 0, .6);
-    }
-
-    @media(min-width:900px) {
-      .br-book {
-        width: 800px;
-        height: 545px;
-        perspective: 2200px;
-      }
-    }
-
-    /* Pages */
-    .br-left,
-    .br-right {
-      flex: 1;
-      background: #f2ede3;
-      padding: 2.6rem 2.4rem 2.2rem;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .br-left {
-      border-radius: 4px 0 0 4px;
-      box-shadow: inset -14px 0 28px rgba(0, 0, 0, .1);
-    }
-
-    .br-right {
-      border-radius: 0 4px 4px 0;
-      box-shadow: inset 14px 0 28px rgba(0, 0, 0, .1);
-    }
-
-    /* Spine */
-    .br-spine {
-      width: 40px;
-      flex-shrink: 0;
-      position: relative;
-      z-index: 5;
-      background: linear-gradient(to right, #180f06 0%, #2e1a0a 30%, #3c2210 50%, #2e1a0a 70%, #180f06 100%);
-      box-shadow: -4px 0 14px rgba(0, 0, 0, .45), 4px 0 14px rgba(0, 0, 0, .45),
-        inset 2px 0 6px rgba(255, 255, 255, .04), inset -2px 0 6px rgba(255, 255, 255, .04);
-    }
-
-    .br-spine::before {
-      content: 'BOOKBLIND';
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%) rotate(90deg);
-      white-space: nowrap;
-      font-family: 'Space Grotesk';
-      font-weight: 700;
-      font-size: .46rem;
-      letter-spacing: .35em;
-      text-transform: uppercase;
-      color: rgba(255, 255, 255, .18);
-    }
-
-    .br-spine::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 2px;
-      height: 100%;
-      background: linear-gradient(to bottom, transparent, rgba(232, 93, 4, .4) 20%, rgba(232, 93, 4, .4) 80%, transparent);
-    }
-
-    /* Flipper */
-    .br-flipper {
-      position: absolute;
-      top: 0;
-      right: 0;
-      width: 380px;
-      height: 100%;
-      transform-origin: left center;
-      transform-style: preserve-3d;
-      transform: rotateY(0deg);
-      transition: none;
-      z-index: 10;
-      pointer-events: none;
-      display: none;
-    }
-
-    .br-flip-f,
-    .br-flip-b {
-      position: absolute;
-      inset: 0;
-      backface-visibility: hidden;
-      background: #f2ede3;
-      overflow: hidden;
-      padding: 2.6rem 2.4rem 2.2rem;
-    }
-
-    .br-flip-f {
-      box-shadow: inset 14px 0 28px rgba(0, 0, 0, .1);
-      border-radius: 0 4px 4px 0;
-    }
-
-    .br-flip-b {
-      transform: rotateY(180deg);
-      box-shadow: inset -14px 0 28px rgba(0, 0, 0, .1);
-      border-radius: 4px 0 0 4px;
-    }
-
-    /* Page-edge shadow sweeping across */
-    .br-flipper::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      z-index: 2;
-      pointer-events: none;
-      backface-visibility: hidden;
-      border-radius: 0 4px 4px 0;
-      background: linear-gradient(to left, rgba(0, 0, 0, .2) 0%, transparent 35%);
-    }
-
-    /* ── Page content typography (cream paper) ── */
-    .pg-brand {
-      font-family: 'Space Grotesk';
-      font-weight: 700;
-      font-size: .56rem;
-      letter-spacing: .22em;
-      text-transform: uppercase;
-      color: rgba(232, 93, 4, .5);
-      margin-bottom: 1.8rem;
-    }
-
-    .pg-num {
-      position: absolute;
-      bottom: 1.5rem;
-      font-size: .6rem;
-      letter-spacing: .18em;
-      color: rgba(26, 14, 8, .22);
-      font-family: 'Playfair Display', serif;
-      font-style: italic;
-    }
-
-    .pg-num-l {
-      left: 2.4rem;
-    }
-
-    .pg-num-r {
-      right: 2.4rem;
-    }
-
-    /* Spread 1 — Cover page */
-    .pg-cv-num {
-      font-family: 'Bebas Neue';
-      font-size: 7rem;
-      line-height: 1;
-      color: rgba(26, 14, 8, .06);
-      position: absolute;
-      top: .5rem;
-      right: 1rem;
-      pointer-events: none;
-    }
-
-    .pg-cv-genre {
-      display: inline-block;
-      font-size: .56rem;
-      letter-spacing: .22em;
-      text-transform: uppercase;
-      color: var(--orange);
-      border: 1px solid rgba(232, 93, 4, .3);
-      padding: .22rem .65rem;
-      margin-bottom: 1.2rem;
-    }
-
-    .pg-cv-title {
-      font-family: 'Playfair Display', serif;
-      font-size: clamp(1.6rem, 3vw, 2.3rem);
-      line-height: .9;
-      color: #1a0e08;
-      font-style: italic;
-      margin-bottom: .5rem;
-    }
-
-    .pg-cv-author {
-      font-size: .66rem;
-      letter-spacing: .16em;
-      text-transform: uppercase;
-      color: rgba(26, 14, 8, .38);
-      margin-bottom: 1.4rem;
-    }
-
-    .pg-cv-rule {
-      height: 2px;
-      width: 36px;
-      background: var(--orange);
-      margin-bottom: 1.4rem;
-    }
-
-    .pg-cv-quote {
-      font-family: 'Playfair Display', serif;
-      font-size: .86rem;
-      line-height: 1.75;
-      color: rgba(26, 14, 8, .62);
-      font-style: italic;
-    }
-
-    /* Spread 1 — Synopsis page */
-    .pg-sec-head {
-      font-family: 'Bebas Neue';
-      font-size: 1.45rem;
-      letter-spacing: .05em;
-      color: #1a0e08;
-      border-bottom: 1px solid rgba(26, 14, 8, .12);
-      padding-bottom: .6rem;
-      margin-bottom: 1.2rem;
-    }
-
-    .pg-sec-head span {
-      color: var(--orange);
-    }
-
-    .pg-body {
-      font-family: 'Playfair Display', serif;
-      font-size: .86rem;
-      line-height: 1.8;
-      color: rgba(26, 14, 8, .68);
-    }
-
-    .pg-pull {
-      margin: 1.4rem 0;
-      padding: .75rem 1.1rem;
-      border-left: 3px solid var(--orange);
-      background: rgba(232, 93, 4, .04);
-    }
-
-    .pg-pull-text {
-      font-family: 'Playfair Display', serif;
-      font-style: italic;
-      font-size: .9rem;
-      line-height: 1.6;
-      color: #1a0e08;
-    }
-
-    .pg-pull-attr {
-      font-size: .58rem;
-      letter-spacing: .2em;
-      text-transform: uppercase;
-      color: rgba(26, 14, 8, .3);
-      display: block;
-      margin-top: .35rem;
-    }
-
-    /* Spread 2 — Themes */
-    .pg-theme {
-      display: flex;
-      gap: .8rem;
-      align-items: flex-start;
-      margin-bottom: 1.2rem;
-    }
-
-    .pg-theme-n {
-      font-family: 'Bebas Neue';
-      font-size: 1.5rem;
-      color: rgba(232, 93, 4, .32);
-      line-height: 1;
-      flex-shrink: 0;
-      width: 1.4rem;
-      text-align: center;
-    }
-
-    .pg-theme-h {
-      font-family: 'Space Grotesk';
-      font-weight: 600;
-      font-size: .76rem;
-      letter-spacing: .05em;
-      color: #1a0e08;
-      margin-bottom: .18rem;
-    }
-
-    .pg-theme-p {
-      font-family: 'Playfair Display', serif;
-      font-style: italic;
-      font-size: .8rem;
-      line-height: 1.58;
-      color: rgba(26, 14, 8, .55);
-    }
-
-    /* Spread 2 — Audience */
-    .pg-for {
-      display: flex;
-      gap: .75rem;
-      align-items: center;
-      margin-bottom: .9rem;
-      padding: .7rem .9rem;
-      background: rgba(26, 14, 8, .04);
-      border-left: 2px solid rgba(232, 93, 4, .28);
-    }
-
-    .pg-for-dot {
-      font-size: .7rem;
-      color: rgba(232, 93, 4, .5);
-      flex-shrink: 0;
-    }
-
-    .pg-for-text {
-      font-family: 'Space Grotesk';
-      font-size: .78rem;
-      line-height: 1.45;
-      color: rgba(26, 14, 8, .65);
-    }
-
-    /* Spread 3 — Details */
-    .pg-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: baseline;
-      padding: .58rem 0;
-      border-bottom: 1px solid rgba(26, 14, 8, .08);
-    }
-
-    .pg-row-l {
-      font-size: .64rem;
-      letter-spacing: .16em;
-      text-transform: uppercase;
-      color: rgba(26, 14, 8, .38);
-    }
-
-    .pg-row-v {
-      font-family: 'Playfair Display', serif;
-      font-size: .85rem;
-      color: #1a0e08;
-    }
-
-    /* Spread 3 — Purchase */
-    .pg-buy-head {
-      font-family: 'Bebas Neue';
-      font-size: clamp(2.4rem, 4vw, 3.2rem);
-      line-height: .82;
-      color: #1a0e08;
-      margin-bottom: .3rem;
-    }
-
-    .pg-buy-sub {
-      font-size: .62rem;
-      letter-spacing: .14em;
-      text-transform: uppercase;
-      color: rgba(26, 14, 8, .38);
-      margin-bottom: 1.6rem;
-    }
-
-    .pg-buy-price {
-      font-family: 'Bebas Neue';
-      font-size: clamp(3rem, 6vw, 4.2rem);
-      line-height: 1;
-      color: var(--orange);
-      margin-bottom: .3rem;
-    }
-
-    .pg-buy-note {
-      font-size: .64rem;
-      color: rgba(26, 14, 8, .38);
-      margin-bottom: 1.6rem;
-    }
-
-    .pg-buy-btn {
-      display: block;
-      width: 100%;
-      padding: 1.3rem;
-      font-family: 'Space Grotesk';
-      font-weight: 700;
-      font-size: .76rem;
-      letter-spacing: .34em;
-      text-transform: uppercase;
-      background: #1a0e08;
-      color: #f2ede3;
-      border: none;
-      cursor: pointer;
-      border-radius: 2px;
-      margin-bottom: .7rem;
-      position: relative;
-      overflow: hidden;
-      box-shadow: 0 6px 24px rgba(0, 0, 0, .45);
-      transition: background .3s, transform .15s, box-shadow .3s;
-    }
-
-    .pg-buy-btn::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, .14) 50%, transparent 100%);
-      transform: translateX(-100%);
-      transition: transform 0s;
-    }
-
-    .pg-buy-btn:hover::before {
-      animation: btnShim .6s ease forwards;
-    }
-
-    .pg-buy-btn:hover {
-      background: var(--orange);
-      transform: translateY(-2px);
-      box-shadow: 0 10px 32px rgba(232, 93, 4, .4);
-    }
-
-    .pg-buy-btn:active {
-      transform: scale(.96);
-    }
-
-    @keyframes btnShim {
-      from { transform: translateX(-100%) }
-      to   { transform: translateX(200%) }
-    }
-
-    @media(hover:none) {
-      .pg-buy-btn {
-        cursor: pointer;
-      }
-    }
-
-    .pg-free-btn {
-      display: block;
-      width: 100%;
-      padding: .85rem;
-      font-family: 'Space Grotesk';
-      font-weight: 600;
-      font-size: .68rem;
-      letter-spacing: .2em;
-      text-transform: uppercase;
-      background: transparent;
-      color: #1a0e08;
-      border: 1px solid rgba(26, 14, 8, .22);
-      cursor: pointer;
-      border-radius: 2px;
-      transition: border-color .25s, background .25s;
-    }
-
-    .pg-free-btn:hover {
-      border-color: #1a0e08;
-      background: rgba(26, 14, 8, .05);
-    }
-
-    @media(hover:none) {
-      .pg-free-btn {
-        cursor: pointer;
-      }
-    }
-
-    .pg-guarantee {
-      margin-top: 1rem;
-      font-size: .62rem;
-      line-height: 1.65;
-      color: rgba(26, 14, 8, .33);
-      text-align: center;
-    }
-
-    /* Navigation */
-    .br-nav {
-      position: absolute;
-      bottom: -3.4rem;
-      left: 0;
-      right: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 1.8rem;
-    }
-
-    .br-nav-btn {
-      font-family: 'Space Grotesk';
-      font-size: .64rem;
-      letter-spacing: .22em;
-      text-transform: uppercase;
-      color: rgba(255, 255, 255, .4);
-      background: none;
-      border: 1px solid rgba(255, 255, 255, .15);
-      padding: .45rem 1.1rem;
-      cursor: pointer;
-      transition: color .2s, border-color .2s;
-    }
-
-    .br-nav-btn:hover {
-      color: #fff;
-      border-color: rgba(255, 255, 255, .4);
-    }
-
-    .br-nav-btn:disabled {
-      opacity: .18;
-      pointer-events: none;
-    }
-
-    @media(hover:none) {
-      .br-nav-btn {
-        cursor: pointer;
-      }
-    }
-
-    .br-dots {
-      display: flex;
-      gap: .45rem;
-      align-items: center;
-    }
-
-    .br-dot {
-      width: 5px;
-      height: 5px;
-      border-radius: 50%;
-      background: rgba(255, 255, 255, .2);
-      transition: background .3s, transform .3s;
-    }
-
-    .br-dot.active {
-      background: var(--orange);
-      transform: scale(1.4);
-    }
-
-    /* Mobile: stack + simple pagination */
-    @media(max-width:899px) {
-      .br-scene {
-        width: 100%;
-        padding: 0 .55rem;
-      }
-
-      .br-topbar {
-        position: sticky;
-        top: max(.8rem, env(safe-area-inset-top));
-        padding: 0 .7rem .8rem;
-        z-index: 30;
-      }
-
-      .br-book {
-        flex-direction: column;
-        height: auto;
-        max-height: min(72svh, calc(100dvh - 10.5rem));
-        overflow-y: auto;
-        -webkit-overflow-scrolling: touch;
-        overscroll-behavior: contain;
-        width: min(460px, calc(100vw - 1.1rem));
-        border-radius: 16px 16px 0 0;
-      }
-
-      .br-left {
-        border-radius: 16px 16px 0 0;
-        box-shadow: none;
-        padding: 1.55rem 1.25rem 1.15rem;
-      }
-
-      .br-right {
-        border-radius: 0;
-        box-shadow: none;
-        padding: 1.15rem 1.25rem 1.65rem;
-      }
-
-      .br-spine {
-        display: none;
-      }
-
-      .br-flipper {
-        display: none !important;
-      }
-
-      .br-nav {
-        position: relative;
-        bottom: auto;
-        padding: .9rem .55rem 1rem;
-        background: rgba(0, 0, 0, .6);
-        border-radius: 0 0 16px 16px;
-        margin-top: 0;
-        gap: .9rem;
-        width: min(460px, calc(100vw - 1.1rem));
-        margin-left: auto;
-        margin-right: auto;
-        box-shadow: 0 18px 44px rgba(0, 0, 0, .55);
-      }
-
-      .br-nav-btn {
-        min-width: 6.3rem;
-        padding: .62rem .72rem;
-        font-size: .58rem;
-        letter-spacing: .18em;
-      }
-
-      .br-scene {
-        opacity: 0;
-        transform: translateY(60px);
-      }
-
-      .modal-ov.open .br-scene {
-        transform: translateY(0);
-        opacity: 1;
-      }
-
-      .pg-brand {
-        font-size: .52rem;
-        margin-bottom: 1rem;
-      }
-
-      .pg-sec-head {
-        font-size: 1.28rem;
-        margin-bottom: .75rem;
-        padding-bottom: .45rem;
-      }
-
-      .pg-body,
-      .pg-theme-p,
-      .pg-for-text {
-        font-size: .78rem;
-        line-height: 1.55;
-      }
-
-      .pg-row {
-        padding: .47rem 0;
-      }
-
-      .pg-buy-head {
-        font-size: clamp(2rem, 13vw, 2.85rem);
-      }
-
-      .pg-buy-sub {
-        margin-bottom: 1rem;
-      }
-
-      .pg-buy-price {
-        font-size: clamp(3.1rem, 18vw, 4.2rem);
-      }
-
-      .pg-buy-note {
-        margin-bottom: 1rem;
-      }
-
-      .pg-buy-btn {
-        padding: 1.05rem .9rem;
-        letter-spacing: .22em;
-        margin-bottom: .65rem;
-      }
-
-      .pg-guarantee {
-        margin-top: .65rem;
-      }
-
-      .pg-num {
-        display: none;
-      }
-    }
-
-    @media(max-width:899px) and (min-width:680px) {
-      .br-book {
-        align-self: center;
-      }
-    }
-
-    /* KEYFRAMES */
-    @keyframes pcFlyIn {
-      0%   { opacity:0; transform:rotateX(30deg) rotateY(-140deg) scale(.28) translateY(30px) }
-      60%  { opacity:1; transform:rotateX(-4deg) rotateY(8deg) scale(1.08) translateY(-4px) }
-      100% { opacity:1; transform:rotateX(0deg) rotateY(-22deg) scale(1) translateY(0) }
-    }
-    @keyframes pcGlow {
-      0%,100% { opacity:.25; transform:translateX(-50%) scale(1) }
-      50%     { opacity:.1;  transform:translateX(-50%) scale(1.55) }
-    }
-    @keyframes pcPart {
-      from { transform:translate(0,0) scale(1); opacity:.95 }
-      to   { transform:translate(var(--tx),var(--ty)) scale(0); opacity:0 }
-    }
-    @keyframes pcSlide {
-      from { opacity:0; transform:translateY(16px) }
-      to   { opacity:1; transform:translateY(0) }
-    }
-    @keyframes rise {
-      from {
-        opacity: 0;
-        transform: translateY(22px)
-      }
-
-      to {
-        opacity: 1;
-        transform: translateY(0)
-      }
-    }
-
-    @keyframes spin {
-      from {
-        transform: rotate(0deg)
-      }
-
-      to {
-        transform: rotate(360deg)
-      }
-    }
-
-    @keyframes marquee {
-      from {
-        transform: translateX(0)
-      }
-
-      to {
-        transform: translateX(-50%)
-      }
-    }
-
-    @keyframes popIn {
-      from {
-        transform: scale(0)
-      }
-
-      to {
-        transform: scale(1)
-      }
-    }
-
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>$1,000/Month — The Real Beginner Blueprint | Level Up Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
+<style>
+  :root {
+    --paper: #F2ECDF;
+    --paper-2: #EAE2CF;
+    --paper-3: #E1D6BB;
+    --ink: #14110D;
+    --ink-2: #2A241C;
+    --ink-3: #5B5142;
+    --rule: #C8B999;
+    --rule-soft: #D9CDB1;
+    --accent: #C13C1B;
+    --accent-2: #9A2F12;
+    --accent-soft: #F2D9CC;
+    --ok: #2F6B3E;
+  }
+  * { box-sizing: border-box; }
+  html, body { background: var(--paper); color: var(--ink); margin: 0; }
+  body {
+    font-family: "Geist", system-ui, sans-serif;
+    font-size: 17px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  .mono { font-family: "Geist Mono", ui-monospace, monospace; }
+  .serif { font-family: "Instrument Serif", "Newsreader", Georgia, serif; font-weight: 400; letter-spacing: -0.005em; }
+  .news { font-family: "Newsreader", Georgia, serif; }
+  .upper { text-transform: uppercase; letter-spacing: 0.12em; }
+  .tiny { font-size: 11px; }
+  .small { font-size: 13.5px; }
+  a { color: inherit; text-decoration: none; }
+
+  /* Subtle paper grain */
+  body::before {
+    content: "";
+    position: fixed; inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background-image:
+      radial-gradient(rgba(20,17,13,0.025) 1px, transparent 1px);
+    background-size: 3px 3px;
+    mix-blend-mode: multiply;
+    opacity: 0.7;
+  }
+
+  /* Layout */
+  .wrap { max-width: 1280px; margin: 0 auto; padding: 0 40px; position: relative; z-index: 1; }
+  .rule { border: 0; border-top: 1px solid var(--rule); margin: 0; }
+  .rule-thick { border: 0; border-top: 2px solid var(--ink); margin: 0; }
+
+  /* Top bar */
+  .topbar {
+    position: sticky; top: 0; z-index: 50;
+    background: var(--paper);
+    border-bottom: 1px solid var(--ink);
+  }
+  .topbar-inner {
+    display: flex; align-items: center; justify-content: space-between;
+    height: 56px;
+  }
+  .brand {
+    display: flex; align-items: center; gap: 10px;
+    font-family: "Geist Mono", monospace;
+    font-weight: 600;
+    font-size: 13px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .brand .mark {
+    width: 18px; height: 18px;
+    background: var(--ink);
+    color: var(--paper);
+    display: grid; place-items: center;
+    font-family: "Geist Mono", monospace;
+    font-weight: 700; font-size: 11px;
+  }
+  .topnav { display: flex; gap: 28px; }
+  .topnav a { font-size: 13px; color: var(--ink-3); font-family: "Geist Mono", monospace; text-transform: uppercase; letter-spacing: 0.08em; }
+  .topnav a:hover { color: var(--ink); }
+  .top-cta {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--ink); color: var(--paper);
+    padding: 8px 14px;
+    font-family: "Geist Mono", monospace;
+    font-size: 12px; letter-spacing: 0.06em;
+    text-transform: uppercase;
+    border: 1px solid var(--ink);
+  }
+  .top-cta:hover { background: var(--accent); border-color: var(--accent); }
+  .top-cta .price { background: var(--paper); color: var(--ink); padding: 1px 6px; }
+
+  /* Pre-hero ticker */
+  .ticker {
+    background: var(--ink); color: var(--paper);
+    overflow: hidden; white-space: nowrap;
+    font-family: "Geist Mono", monospace;
+    font-size: 12px; letter-spacing: 0.08em;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--ink);
+  }
+  .ticker-track {
+    display: inline-block;
+    animation: ticker 60s linear infinite;
+    padding-left: 100%;
+  }
+  .ticker span { padding: 0 30px; }
+  .ticker .dot { color: var(--accent); }
+  @keyframes ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
+
+  /* Hero */
+  .hero { padding: 56px 0 72px; position: relative; }
+  .hero-grid { display: grid; grid-template-columns: 1.15fr 1fr; gap: 80px; align-items: end; }
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 10px;
+    font-family: "Geist Mono", monospace;
+    font-size: 12px; letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin-bottom: 28px;
+  }
+  .eyebrow .pip { width: 6px; height: 6px; background: var(--accent); border-radius: 50%; }
+  .h1 {
+    font-family: "Instrument Serif", Georgia, serif;
+    font-weight: 400;
+    font-size: clamp(64px, 8.8vw, 132px);
+    line-height: 0.92;
+    letter-spacing: -0.025em;
+    margin: 0 0 28px;
+  }
+  .h1 em { font-style: italic; color: var(--accent); }
+  .h1 .strike { text-decoration: line-through; text-decoration-color: var(--accent); text-decoration-thickness: 4px; color: var(--ink-3); }
+  .lede {
+    font-family: "Newsreader", Georgia, serif;
+    font-size: 22px; line-height: 1.4;
+    max-width: 540px;
+    color: var(--ink-2);
+    margin: 0 0 32px;
+  }
+  .hero-meta {
+    display: flex; gap: 36px; flex-wrap: wrap;
+    padding: 20px 0;
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+    margin-bottom: 32px;
+  }
+  .meta-cell .k { font-family: "Geist Mono", monospace; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 4px; }
+  .meta-cell .v { font-family: "Instrument Serif", serif; font-size: 32px; line-height: 1; }
+
+  .cta-row { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+  .btn-primary {
+    display: inline-flex; align-items: center; gap: 12px;
+    background: var(--accent); color: var(--paper);
+    padding: 16px 22px;
+    font-family: "Geist Mono", monospace;
+    font-weight: 600; font-size: 13px; letter-spacing: 0.06em;
+    text-transform: uppercase;
+    border: 1px solid var(--accent);
+    cursor: pointer;
+    transition: transform 0.08s, background 0.15s;
+  }
+  .btn-primary:hover { background: var(--accent-2); transform: translateY(-1px); }
+  .btn-primary .arrow { font-family: "Geist Mono", monospace; font-size: 14px; }
+  .btn-ghost {
+    display: inline-flex; align-items: center; gap: 8px;
+    color: var(--ink);
+    padding: 15px 18px;
+    font-family: "Geist Mono", monospace;
+    font-weight: 500; font-size: 13px; letter-spacing: 0.06em;
+    text-transform: uppercase;
+    border: 1px solid var(--ink);
+    background: transparent;
+    cursor: pointer;
+  }
+  .btn-ghost:hover { background: var(--ink); color: var(--paper); }
+  .reassure { font-size: 12px; color: var(--ink-3); margin-top: 16px; font-family: "Geist Mono", monospace; letter-spacing: 0.04em; }
+  .reassure .check { color: var(--ok); }
+
+  /* Book mockup */
+  .book-stage {
+    position: relative;
+    perspective: 1800px;
+    display: grid; place-items: center;
+    min-height: 580px;
+  }
+  .book {
+    position: relative;
+    width: 360px; height: 510px;
+    transform: rotateY(-22deg) rotateX(4deg);
+    transform-style: preserve-3d;
+    transition: transform 0.6s cubic-bezier(.2,.7,.2,1);
+    filter: drop-shadow(40px 50px 50px rgba(20,17,13,0.28));
+  }
+  .book:hover { transform: rotateY(-12deg) rotateX(2deg); }
+  .book .cover {
+    position: absolute; inset: 0;
+    background: #14110D;
+    color: var(--paper);
+    padding: 32px 30px;
+    display: flex; flex-direction: column; justify-content: space-between;
+    border: 1px solid #000;
+  }
+  .book .cover::before {
+    content: ""; position: absolute; left: 8px; top: 8px; bottom: 8px; right: 8px;
+    border: 1px solid rgba(242,236,223,0.18);
+    pointer-events: none;
+  }
+  .book .pages {
+    position: absolute; top: 3px; bottom: 3px; right: -10px; width: 14px;
+    background: repeating-linear-gradient(to bottom, #f2ecdf 0 2px, #d9cdb1 2px 3px);
+    transform: rotateY(90deg) translateZ(-7px);
+    transform-origin: right center;
+  }
+  .book .spine {
+    position: absolute; top: 0; bottom: 0; left: 0; width: 14px;
+    background: #0a0805;
+    transform: rotateY(-90deg) translateZ(7px);
+    transform-origin: left center;
+  }
+  .cv-top { display: flex; justify-content: space-between; align-items: flex-start; font-family: "Geist Mono", monospace; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(242,236,223,0.6); }
+  .cv-top .sigil { width: 22px; height: 22px; border: 1px solid rgba(242,236,223,0.5); display: grid; place-items: center; font-size: 11px; }
+  .cv-mid .price-tag {
+    font-family: "Instrument Serif", serif;
+    font-size: 132px; line-height: 0.85;
+    letter-spacing: -0.04em;
+    color: var(--paper);
+  }
+  .cv-mid .per { font-family: "Geist Mono", monospace; font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--accent-soft); margin-top: 4px; }
+  .cv-mid .accent-bar { width: 60px; height: 3px; background: var(--accent); margin: 18px 0 16px; }
+  .cv-mid .subtitle { font-family: "Instrument Serif", serif; font-style: italic; font-size: 26px; line-height: 1.1; color: var(--paper); max-width: 280px; }
+  .cv-bottom { font-family: "Geist Mono", monospace; font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(242,236,223,0.55); display: flex; justify-content: space-between; }
+
+  .book-cap {
+    position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);
+    font-family: "Geist Mono", monospace; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--ink-3);
+  }
+  .stamp {
+    position: absolute; top: 20px; right: -10px;
+    background: var(--accent); color: var(--paper);
+    font-family: "Geist Mono", monospace; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 8px 14px;
+    transform: rotate(6deg);
+    box-shadow: 4px 4px 0 var(--ink);
+  }
+
+  /* Section pattern */
+  .section { padding: 96px 0; border-top: 1px solid var(--rule); position: relative; }
+  .section.dark { background: var(--ink); color: var(--paper); border-top-color: var(--ink); }
+  .section.dark .rule { border-top-color: rgba(242,236,223,0.18); }
+  .section.dark .eyebrow { color: rgba(242,236,223,0.55); }
+  .section.dark .lede { color: rgba(242,236,223,0.78); }
+
+  .sec-head {
+    display: grid; grid-template-columns: 1fr 2fr; gap: 60px;
+    margin-bottom: 56px;
+    align-items: end;
+  }
+  .sec-num {
+    font-family: "Geist Mono", monospace;
+    font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--ink-3);
+  }
+  .sec-num .bar { display: inline-block; width: 32px; height: 1px; background: var(--ink-3); vertical-align: middle; margin-right: 12px; }
+  .sec-title {
+    font-family: "Instrument Serif", serif;
+    font-size: clamp(40px, 5vw, 72px);
+    line-height: 0.98;
+    letter-spacing: -0.02em;
+    margin: 12px 0 0;
+  }
+  .sec-title em { font-style: italic; color: var(--accent); }
+  .sec-kicker {
+    font-family: "Newsreader", Georgia, serif;
+    font-size: 20px; line-height: 1.45;
+    color: var(--ink-2);
+    max-width: 560px;
+  }
+  .section.dark .sec-kicker { color: rgba(242,236,223,0.8); }
+
+  /* Pain section (who it's for) */
+  .duality { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+  .duality > div { padding: 36px 32px; }
+  .duality > div + div { border-left: 1px solid var(--rule); }
+  .duality h3 {
+    font-family: "Geist Mono", monospace;
+    font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase;
+    margin: 0 0 24px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .duality h3 .tag { font-family: "Geist Mono", monospace; font-size: 11px; padding: 2px 8px; background: var(--ink); color: var(--paper); }
+  .duality h3 .tag.bad { background: var(--accent); }
+  .duality ul { list-style: none; padding: 0; margin: 0; }
+  .duality li {
+    font-family: "Newsreader", Georgia, serif;
+    font-size: 19px; line-height: 1.5;
+    padding: 14px 0 14px 32px;
+    border-top: 1px dashed var(--rule-soft);
+    position: relative;
+  }
+  .duality li:first-child { border-top: 0; }
+  .duality li::before {
+    content: ""; position: absolute; left: 0; top: 22px;
+    width: 14px; height: 1px; background: var(--ink);
+  }
+  .duality .bad-col li::before { background: var(--accent); }
+
+  /* The Math section */
+  .math-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 64px; align-items: start; }
+  .math-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .math-table th, .math-table td {
+    padding: 14px 8px;
+    text-align: left;
+    border-bottom: 1px solid var(--rule);
+    vertical-align: baseline;
+  }
+  .math-table th {
+    font-family: "Geist Mono", monospace;
+    font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--ink-3);
+    font-weight: 500;
+    border-top: 2px solid var(--ink);
+    border-bottom: 2px solid var(--ink);
+  }
+  .math-table td.path { font-family: "Newsreader", serif; font-size: 19px; }
+  .math-table td.num { font-family: "Geist Mono", monospace; font-size: 15px; }
+  .math-table tr.hi td.path { color: var(--accent); font-weight: 500; }
+  .math-table tr.hi td.num { color: var(--accent); }
+  .math-pointer {
+    margin-top: 20px;
+    font-family: "Newsreader", serif;
+    font-size: 17px;
+    line-height: 1.5;
+    color: var(--ink-2);
+    border-left: 3px solid var(--accent);
+    padding-left: 16px;
+  }
+  .stat-cluster {
+    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1px;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+  }
+  .stat-cell { background: var(--paper); padding: 24px 20px; }
+  .stat-cell .stat-v { font-family: "Instrument Serif", serif; font-size: 72px; line-height: 0.9; letter-spacing: -0.03em; }
+  .stat-cell .stat-v em { color: var(--accent); font-style: normal; }
+  .stat-cell .stat-k { font-family: "Geist Mono", monospace; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-3); margin-top: 6px; }
+  .stat-foot {
+    margin-top: 24px;
+    font-family: "Newsreader", serif;
+    font-size: 18px; line-height: 1.5; color: var(--ink-2);
+  }
+
+  /* Paths */
+  .paths-shell { display: grid; grid-template-columns: 320px 1fr; gap: 56px; align-items: start; }
+  .path-tabs { display: flex; flex-direction: column; gap: 0; border-top: 1px solid var(--rule); }
+  .path-tab {
+    text-align: left;
+    background: transparent;
+    border: 0;
+    border-bottom: 1px solid var(--rule);
+    padding: 22px 0;
+    cursor: pointer;
+    color: var(--ink);
+    display: flex; align-items: baseline; gap: 16px;
+    transition: padding 0.15s;
+  }
+  .path-tab:hover { padding-left: 8px; }
+  .path-tab .pnum { font-family: "Geist Mono", monospace; font-size: 11px; letter-spacing: 0.1em; color: var(--ink-3); width: 22px; flex-shrink: 0; }
+  .path-tab .ptitle { font-family: "Instrument Serif", serif; font-size: 28px; line-height: 1.05; letter-spacing: -0.01em; }
+  .path-tab.active { padding-left: 8px; }
+  .path-tab.active .pnum { color: var(--accent); }
+  .path-tab.active .ptitle { color: var(--accent); }
+  .path-tab.active .ptitle::before { content: "→ "; font-family: "Geist Mono", monospace; }
+
+  .path-panel {
+    border: 1px solid var(--ink);
+    background: var(--paper);
+    padding: 40px 44px;
+    position: relative;
+    min-height: 460px;
+  }
+  .path-panel.dark { background: var(--ink); color: var(--paper); }
+  .path-panel.dark .meta-cell .k { color: rgba(242,236,223,0.55); }
+  .path-panel.dark .pp-sub { color: rgba(242,236,223,0.75); }
+  .path-panel.dark .pp-when { color: rgba(242,236,223,0.7); }
+  .path-panel.dark .pp-when strong { color: var(--paper); }
+  .pp-corner {
+    position: absolute; top: -1px; right: -1px;
+    background: var(--accent); color: var(--paper);
+    font-family: "Geist Mono", monospace; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 7px 12px;
+  }
+  .pp-head { display: flex; align-items: baseline; gap: 14px; margin-bottom: 8px; }
+  .pp-pnum { font-family: "Geist Mono", monospace; font-size: 12px; letter-spacing: 0.12em; color: var(--ink-3); }
+  .pp-title { font-family: "Instrument Serif", serif; font-size: 56px; line-height: 1; letter-spacing: -0.02em; margin: 0; }
+  .pp-sub { font-family: "Newsreader", serif; font-style: italic; font-size: 22px; line-height: 1.35; margin: 8px 0 28px; max-width: 600px; color: var(--ink-2); }
+  .pp-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; padding: 20px 0; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); margin-bottom: 24px; }
+  .path-panel.dark .pp-stats { border-color: rgba(242,236,223,0.18); }
+  .pp-stat .k { font-family: "Geist Mono", monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 4px; }
+  .path-panel.dark .pp-stat .k { color: rgba(242,236,223,0.55); }
+  .pp-stat .v { font-family: "Instrument Serif", serif; font-size: 22px; line-height: 1.1; }
+  .pp-stat .v em { color: var(--accent); font-style: normal; }
+  .pp-body { font-family: "Newsreader", serif; font-size: 17px; line-height: 1.55; color: var(--ink-2); max-width: 620px; margin-bottom: 20px; }
+  .path-panel.dark .pp-body { color: rgba(242,236,223,0.78); }
+  .pp-when { font-family: "Geist Mono", monospace; font-size: 12px; letter-spacing: 0.05em; color: var(--ink-3); }
+  .pp-when strong { color: var(--ink); font-weight: 500; }
+
+  /* Sample reader */
+  .reader-frame {
+    background: var(--paper-2);
+    border: 1px solid var(--rule);
+    padding: 0;
+    display: grid; grid-template-columns: 60px 1fr;
+  }
+  .reader-rail {
+    background: var(--paper-3);
+    border-right: 1px solid var(--rule);
+    padding: 24px 0;
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    font-family: "Geist Mono", monospace;
+    font-size: 11px; letter-spacing: 0.08em;
+    color: var(--ink-3);
+  }
+  .reader-rail .pgnum { writing-mode: vertical-rl; transform: rotate(180deg); letter-spacing: 0.15em; text-transform: uppercase; }
+  .reader-doc { padding: 48px 64px; min-height: 540px; position: relative; }
+  .reader-tag { font-family: "Geist Mono", monospace; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 12px; }
+  .reader-h { font-family: "Instrument Serif", serif; font-size: 48px; line-height: 1; letter-spacing: -0.02em; margin: 0 0 8px; }
+  .reader-sub { font-family: "Newsreader", serif; font-style: italic; font-size: 22px; color: var(--ink-2); margin: 0 0 28px; }
+  .reader-body { font-family: "Newsreader", serif; font-size: 17px; line-height: 1.6; color: var(--ink-2); }
+  .reader-body p { margin: 0 0 16px; max-width: 620px; }
+  .reader-body .drop::first-letter {
+    font-family: "Instrument Serif", serif;
+    font-size: 72px;
+    float: left;
+    line-height: 0.85;
+    padding: 6px 12px 0 0;
+    color: var(--accent);
+  }
+  .reader-callout {
+    background: var(--paper);
+    border-left: 4px solid var(--accent);
+    padding: 18px 22px;
+    font-family: "Newsreader", serif;
+    font-size: 17px;
+    margin: 24px 0;
+    max-width: 620px;
+  }
+  .reader-callout .cl-k { font-family: "Geist Mono", monospace; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); margin-bottom: 6px; }
+  .reader-fade {
+    position: absolute; left: 0; right: 0; bottom: 0; height: 180px;
+    background: linear-gradient(to bottom, rgba(234,226,207,0), rgba(234,226,207,0.96) 70%);
+    display: flex; align-items: flex-end; justify-content: center;
+    padding-bottom: 28px;
+  }
+  .reader-fade .btn-primary { box-shadow: 0 6px 24px rgba(193,60,27,0.3); }
+
+  .reader-tabs { display: flex; gap: 1px; background: var(--rule); margin-bottom: 24px; }
+  .reader-tab {
+    flex: 1;
+    background: var(--paper-2);
+    border: 0;
+    padding: 14px 12px;
+    text-align: left;
+    cursor: pointer;
+    font-family: "Geist Mono", monospace;
+    font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--ink-3);
+  }
+  .reader-tab.active { background: var(--ink); color: var(--paper); }
+
+  /* TOC / What's inside */
+  .toc-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0 64px; }
+  .toc-item {
+    display: grid; grid-template-columns: 50px 1fr 80px;
+    align-items: baseline;
+    gap: 16px;
+    padding: 16px 0;
+    border-bottom: 1px dashed var(--rule);
+  }
+  .toc-item:hover { background: rgba(20,17,13,0.02); }
+  .toc-num { font-family: "Geist Mono", monospace; font-size: 12px; color: var(--ink-3); letter-spacing: 0.08em; }
+  .toc-title { font-family: "Instrument Serif", serif; font-size: 24px; line-height: 1.15; letter-spacing: -0.01em; }
+  .toc-sub { font-family: "Newsreader", serif; font-style: italic; font-size: 15px; color: var(--ink-3); margin-top: 2px; }
+  .toc-pg { font-family: "Geist Mono", monospace; font-size: 12px; color: var(--ink-3); text-align: right; letter-spacing: 0.05em; }
+  .toc-item.bonus .toc-num { color: var(--accent); }
+  .toc-item.bonus .toc-title::after { content: " ★"; color: var(--accent); }
+
+  /* Bonuses */
+  .bonus-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+  .bonus-card {
+    background: var(--paper);
+    border: 1px solid var(--ink);
+    padding: 28px;
+    position: relative;
+    display: flex; flex-direction: column;
+  }
+  .bonus-card .b-tag { font-family: "Geist Mono", monospace; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); margin-bottom: 18px; display: flex; justify-content: space-between; align-items: center; }
+  .bonus-card .b-tag .b-val { color: var(--ink-3); text-decoration: line-through; }
+  .bonus-card .b-title { font-family: "Instrument Serif", serif; font-size: 32px; line-height: 1; letter-spacing: -0.01em; margin: 0 0 8px; }
+  .bonus-card .b-sub { font-family: "Newsreader", serif; font-size: 16px; line-height: 1.45; color: var(--ink-2); }
+  .bonus-card .b-foot { margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--rule); font-family: "Geist Mono", monospace; font-size: 11px; letter-spacing: 0.05em; color: var(--ink-3); }
+
+  /* Pull quote / Author */
+  .pull {
+    display: grid; grid-template-columns: 1fr 2fr; gap: 60px; align-items: start;
+    padding: 56px 0;
+  }
+  .pull-q {
+    font-family: "Instrument Serif", serif;
+    font-style: italic;
+    font-size: clamp(36px, 4vw, 56px);
+    line-height: 1.05;
+    letter-spacing: -0.015em;
+  }
+  .pull-q::before { content: "“"; color: var(--accent); margin-right: 4px; }
+  .pull-q::after { content: "”"; color: var(--accent); margin-left: 4px; }
+  .pull-attr { font-family: "Geist Mono", monospace; font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-3); margin-top: 24px; }
+
+  /* Offer */
+  .offer-box {
+    background: var(--paper);
+    border: 2px solid var(--ink);
+    padding: 0;
+    display: grid; grid-template-columns: 1.4fr 1fr;
+    overflow: hidden;
+  }
+  .offer-l { padding: 48px; border-right: 1px solid var(--ink); }
+  .offer-r { padding: 48px; background: var(--ink); color: var(--paper); display: flex; flex-direction: column; justify-content: space-between; }
+  .offer-tag { font-family: "Geist Mono", monospace; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); }
+  .offer-title { font-family: "Instrument Serif", serif; font-size: 56px; line-height: 0.98; letter-spacing: -0.02em; margin: 16px 0 20px; }
+  .offer-list { list-style: none; padding: 0; margin: 0 0 28px; }
+  .offer-list li {
+    font-family: "Newsreader", serif; font-size: 18px;
+    padding: 12px 0 12px 28px;
+    position: relative;
+    border-top: 1px solid var(--rule);
+  }
+  .offer-list li::before {
+    content: "✓";
+    position: absolute; left: 0; top: 12px;
+    font-family: "Geist Mono", monospace;
+    color: var(--accent);
+    font-weight: 700;
+  }
+  .offer-list li .v { font-family: "Geist Mono", monospace; font-size: 12px; color: var(--ink-3); float: right; }
+
+  .price-block .crossed { font-family: "Geist Mono", monospace; font-size: 14px; color: rgba(242,236,223,0.55); text-decoration: line-through; letter-spacing: 0.05em; }
+  .price-block .now { font-family: "Instrument Serif", serif; font-size: 128px; line-height: 0.9; letter-spacing: -0.04em; color: var(--paper); }
+  .price-block .now em { color: var(--accent); font-style: normal; }
+  .price-block .now .cents { font-size: 36px; vertical-align: super; line-height: 1; margin-left: 4px; }
+  .price-block .desc { font-family: "Geist Mono", monospace; font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(242,236,223,0.6); margin-bottom: 28px; }
+  .offer-r .btn-primary { width: 100%; justify-content: center; padding: 20px; font-size: 14px; }
+  .offer-guarantees { display: flex; flex-direction: column; gap: 8px; margin-top: 24px; font-family: "Geist Mono", monospace; font-size: 11px; color: rgba(242,236,223,0.7); letter-spacing: 0.05em; }
+  .offer-guarantees .row { display: flex; gap: 8px; align-items: center; }
+  .offer-guarantees .row .icon { width: 14px; height: 14px; border: 1px solid rgba(242,236,223,0.5); display: grid; place-items: center; font-size: 10px; }
+
+  /* FAQ */
+  .faq-list { border-top: 1px solid var(--rule); }
+  .faq-item { border-bottom: 1px solid var(--rule); }
+  .faq-q {
+    width: 100%;
+    background: transparent;
+    border: 0;
+    padding: 24px 0;
+    display: flex; align-items: center; justify-content: space-between;
+    cursor: pointer;
+    text-align: left;
+    color: var(--ink);
+    font-family: "Instrument Serif", serif;
+    font-size: 28px; line-height: 1.15; letter-spacing: -0.01em;
+  }
+  .faq-q .plus { font-family: "Geist Mono", monospace; font-size: 20px; color: var(--accent); transition: transform 0.2s; }
+  .faq-item.open .faq-q .plus { transform: rotate(45deg); }
+  .faq-a {
+    max-height: 0; overflow: hidden;
+    font-family: "Newsreader", serif; font-size: 18px; line-height: 1.5; color: var(--ink-2);
+    transition: max-height 0.3s, padding 0.3s;
+  }
+  .faq-item.open .faq-a { max-height: 400px; padding: 0 0 24px; }
+  .faq-a p { margin: 0 0 12px; max-width: 720px; }
+
+  /* Final */
+  .final {
+    background: var(--ink);
+    color: var(--paper);
+    text-align: center;
+    padding: 120px 0 96px;
+  }
+  .final h2 {
+    font-family: "Instrument Serif", serif;
+    font-size: clamp(56px, 8vw, 128px);
+    line-height: 0.92;
+    margin: 0 auto 32px;
+    max-width: 14ch;
+    letter-spacing: -0.025em;
+  }
+  .final h2 em { color: var(--accent); font-style: italic; }
+  .final p { font-family: "Newsreader", serif; font-size: 22px; max-width: 580px; margin: 0 auto 40px; color: rgba(242,236,223,0.78); }
+  .final .btn-primary { font-size: 14px; padding: 20px 28px; }
+
+  /* Footer */
+  .foot { padding: 32px 0 48px; }
+  .foot-inner { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; font-family: "Geist Mono", monospace; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); }
+
+  /* Responsive */
+  @media (max-width: 980px) {
+    .hero-grid, .math-grid, .toc-grid, .paths-shell, .offer-box, .pull, .sec-head { grid-template-columns: 1fr; gap: 40px; }
+    .offer-l, .offer-r { padding: 32px; }
+    .offer-r { border-right: 0; border-top: 1px solid var(--ink); }
+    .bonus-grid { grid-template-columns: 1fr; }
+    .duality { grid-template-columns: 1fr; }
+    .duality > div + div { border-left: 0; border-top: 1px solid var(--rule); }
+    .stat-cluster { grid-template-columns: 1fr; }
+    .pp-stats { grid-template-columns: 1fr 1fr; }
+    .reader-doc { padding: 32px; }
+    .reader-frame { grid-template-columns: 1fr; }
+    .reader-rail { display: none; }
+    .topnav { display: none; }
+    .wrap { padding: 0 24px; }
+    .section { padding: 72px 0; }
+  }
+</style>
 </head>
-
 <body>
-  <div id="bg"></div>
-  <div class="cur" id="cur"></div>
 
-  <!-- ENTER -->
-  <div id="enter">
-    <div class="e-logo">BOOK<b>></b>BLIND</div>
-    <button class="e-btn" id="e-btn">ENTER</button>
+<!-- Ticker -->
+<div class="ticker">
+  <div class="ticker-track">
+    <span class="dot">●</span><span>LEVEL UP LAB — PRACTICAL ONLINE INCOME PLAYBOOKS</span>
+    <span class="dot">●</span><span>FIRST EDITION · 53 PAGES · INSTANT DOWNLOAD</span>
+    <span class="dot">●</span><span>NO FLUFF · NO GURUS · JUST SYSTEMS THAT WORK</span>
+    <span class="dot">●</span><span>30-DAY ACTION PLAN INCLUDED</span>
+    <span class="dot">●</span><span>FIVE PROVEN PATHS</span>
+    <span class="dot">●</span><span>LEVEL UP LAB — PRACTICAL ONLINE INCOME PLAYBOOKS</span>
+    <span class="dot">●</span><span>FIRST EDITION · 53 PAGES · INSTANT DOWNLOAD</span>
+    <span class="dot">●</span><span>NO FLUFF · NO GURUS · JUST SYSTEMS THAT WORK</span>
   </div>
+</div>
 
-  <!-- MENU -->
-  <div class="menu-ov" id="menu-ov">
-    <button class="menu-close" id="menu-close">CLOSE</button>
-    <ul class="menu-links">
-      <li><a href="#hero">Home</a></li>
-      <li><a href="#manifesto">About</a></li>
-      <li><a href="#svc1">Services</a></li>
-      <li><a href="#books">Books</a></li>
-      <li><a href="#cta">Join</a></li>
-    </ul>
-    <button class="menu-logout" id="menu-logout" style="display:none">[ SIGN OUT ]</button>
+<!-- Top bar -->
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="#top">
+      <span class="mark">L</span>
+      <span>Level Up Lab</span>
+    </a>
+    <nav class="topnav">
+      <a href="#math">The Math</a>
+      <a href="#paths">Five Paths</a>
+      <a href="#inside">What's Inside</a>
+      <a href="#offer">Pricing</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+    <a class="top-cta" href="#offer">
+      <span>Get the book</span>
+      <span class="price">$27</span>
+    </a>
   </div>
+</header>
 
-  <!-- NAV -->
-  <nav>
-    <a href="#" class="nav-logo">BOOK<b>></b>BLIND</a>
-    <div class="nav-frame" id="frame">[ 001 ]</div>
-    <button class="nav-menu-btn" id="menu-btn">MENU</button>
-  </nav>
+<!-- HERO -->
+<section class="hero" id="top">
+  <div class="wrap hero-grid">
+    <div>
+      <div class="eyebrow"><span class="pip"></span>The Real Beginner Blueprint · First Edition · 2026</div>
+      <h1 class="h1">Your first <em>$1,000</em><br/>online — without the <span class="strike">gurus</span>.</h1>
+      <p class="lede">Five proven paths to your first $1K online, and the framework to pick the right one for you. Written for operators, not audiences.</p>
 
-  <!-- ══════════════ REGISTER MODAL ══════════════ -->
-  <div class="modal-ov" id="reg-modal">
-    <div class="reg-scene" id="reg-book-wrap">
-      <button class="mx" id="reg-x">[ CLOSE ]</button>
-
-      <div class="book-3d" id="book-3d">
-
-        <!-- 3D COVER FLIP (desktop only) -->
-        <div class="book-flip" id="book-flip">
-
-          <!-- FRONT face: the book cover -->
-          <div class="bface bface-front">
-            <div class="cov-top-bar">
-              <div class="cov-logo-sm">BOOK<b>></b>BLIND</div>
-              <div class="cov-tag">Vol. I</div>
-            </div>
-            <div class="cov-seal"></div>
-            <div class="cov-title-text">The<br>Blind<br>Library</div>
-            <div class="cov-orn">
-              <div class="cov-orn-line"></div>
-              <div class="cov-orn-dot">◆</div>
-              <div class="cov-orn-line"></div>
-            </div>
-            <div class="cov-subtitle">Digital Reading Platform</div>
-            <div class="cov-footer">
-              <div class="cov-foot-l">Est. 2024</div>
-              <div class="cov-foot-r">First Edition</div>
-            </div>
-          </div>
-
-          <!-- BACK face: inside of front cover (seen mid-flip) -->
-          <div class="bface bface-back">
-            <div class="bback-inner">
-              <span class="bback-ornament">◆</span>
-              <div class="bback-quote">"Every great story<br>begins with opening<br>a single page."</div>
-              <div class="bback-attr">— BookBlind</div>
-            </div>
-          </div>
-
-        </div><!-- .book-flip -->
-
-        <!-- FORM PAGE (always behind cover, revealed when it flips) -->
-        <div class="book-form-page">
-
-          <!-- Mobile header strip -->
-          <div class="mobile-cov-strip">
-            <div class="mcov-logo">Book<b>></b>Blind</div>
-            <div class="mcov-title" id="mob-form-title">OPEN YOUR<br>ACCOUNT</div>
-          </div>
-
-          <div class="bfp-body">
-            <div class="bfp-header">
-              <div class="bfp-logo-sm">BOOK<b>></b>BLIND</div>
-              <div class="bfp-title" id="bfp-title">OPEN YOUR<br>ACCOUNT</div>
-            </div>
-
-            <div class="reg-success" id="reg-success">
-              <div class="chk">✓</div>
-              <p id="reg-success-msg">Welcome to BookBlind!</p>
-            </div>
-
-            <form id="reg-form" novalidate>
-              <div class="field-w" id="f-name-wrap">
-                <input class="field-i" type="text" id="f-name" placeholder=" ">
-                <label class="field-l" for="f-name">Your Name</label>
-              </div>
-              <div class="field-w">
-                <input class="field-i" type="email" id="f-email" placeholder=" " required>
-                <label class="field-l" for="f-email">Email Address</label>
-              </div>
-              <div class="field-w">
-                <input class="field-i" type="password" id="f-pass" placeholder=" " required minlength="6">
-                <label class="field-l" for="f-pass">Password</label>
-              </div>
-              <div id="reg-error"
-                style="display:none;font-size:.72rem;color:#c0392b;margin:.2rem 0 .6rem;letter-spacing:.04em;"></div>
-              <button type="submit" class="reg-submit" id="reg-submit-btn">[ CREATE ACCOUNT ]</button>
-            </form>
-
-            <div class="reg-note" id="reg-note">Already a member? <a href="#" id="sign-in-lnk">Sign in</a></div>
-          </div>
-        </div><!-- .book-form-page -->
-
-      </div><!-- .book-3d -->
-    </div><!-- .reg-scene -->
-  </div><!-- #reg-modal -->
-
-  <!-- ══════════════ BOOK READER MODAL ══════════════ -->
-  <div class="modal-ov" id="book-modal" style="align-items:center">
-    <div class="br-scene" id="br-scene">
-      <div class="br-topbar">
-        <button class="br-logout-btn" id="br-logout">[ SIGN OUT ]</button>
-        <button class="br-close-btn" id="book-x">[ CLOSE ]</button>
+      <div class="hero-meta">
+        <div class="meta-cell"><div class="k">Pages</div><div class="v">53</div></div>
+        <div class="meta-cell"><div class="k">Paths</div><div class="v">5</div></div>
+        <div class="meta-cell"><div class="k">Day Plan</div><div class="v">30</div></div>
+        <div class="meta-cell"><div class="k">Hrs / wk</div><div class="v">10</div></div>
       </div>
-      <div class="br-book" id="br-book">
-        <div class="br-left" id="br-left"></div>
-        <div class="br-spine"></div>
-        <div class="br-right" id="br-right"></div>
-        <div class="br-flipper" id="br-flipper">
-          <div class="br-flip-f" id="br-flip-f"></div>
-          <div class="br-flip-b" id="br-flip-b"></div>
+
+      <div class="cta-row">
+        <a href="#offer" class="btn-primary">
+          <span>Download · $27</span>
+          <span class="arrow">→</span>
+        </a>
+        <a href="#sample" class="btn-ghost">Read a sample</a>
+      </div>
+      <div class="reassure">
+        <span class="check">✓</span> Instant PDF · <span class="check">✓</span> 30-day refund · <span class="check">✓</span> Lifetime updates
+      </div>
+    </div>
+
+    <!-- Book -->
+    <div class="book-stage">
+      <div class="stamp">First Edition</div>
+      <div class="book">
+        <div class="spine"></div>
+        <div class="pages"></div>
+        <div class="cover">
+          <div class="cv-top">
+            <div>Level Up Lab</div>
+            <div class="sigil">L</div>
+          </div>
+          <div class="cv-mid">
+            <div class="price-tag">$1K</div>
+            <div class="per">Per Month</div>
+            <div class="accent-bar"></div>
+            <div class="subtitle">The Real Beginner Blueprint.</div>
+          </div>
+          <div class="cv-bottom">
+            <span>Vol. 01</span>
+            <span>levelup.lab</span>
+          </div>
         </div>
       </div>
-      <div class="br-nav">
-        <button class="br-nav-btn" id="br-prev">← PREV</button>
-        <div class="br-dots" id="br-dots"></div>
-        <button class="br-nav-btn" id="br-next">NEXT →</button>
+      <div class="book-cap">3D · Hover to tilt</div>
+    </div>
+  </div>
+</section>
+
+<!-- Who it's for / Who it's NOT for -->
+<section class="section" id="who">
+  <div class="wrap">
+    <div class="sec-head">
+      <div>
+        <div class="sec-num"><span class="bar"></span>01 / Audience</div>
+        <h2 class="sec-title">Who this is <em>actually</em> for.</h2>
+      </div>
+      <p class="sec-kicker">If you bought a guide hoping for a magic loophole, a secret platform, or a passive-income scheme that runs while you sleep — close this tab and ask for a refund. This book is the opposite of that.</p>
+    </div>
+
+    <div class="duality">
+      <div class="good-col">
+        <h3><span class="tag">For</span> The operators</h3>
+        <ul>
+          <li>People who'd rather ship something ugly today than perfect in three months.</li>
+          <li>Freelancers stuck below $1K and tired of "find your niche" advice.</li>
+          <li>Anyone with 10 focused hours a week and a working laptop.</li>
+          <li>Beginners who can handle direct feedback without flinching.</li>
+          <li>Career-switchers who want cash, not a personal brand.</li>
+        </ul>
+      </div>
+      <div class="bad-col">
+        <h3><span class="tag bad">Not for</span> The audience</h3>
+        <ul>
+          <li>People hunting a passive-income loophole that runs while you sleep.</li>
+          <li>Anyone who needs a guru, a hype call, or a Discord with 4K silent members.</li>
+          <li>The "I'll start when I find the perfect logo and Notion dashboard" crowd.</li>
+          <li>Buyers who treat $27 as a risk instead of a Tuesday lunch.</li>
+          <li>Beginners who jump paths every three weeks and blame the path.</li>
+        </ul>
       </div>
     </div>
   </div>
+</section>
 
-  <!-- ══════════════ MAIN ══════════════ -->
-  <main id="main">
-
-    <section id="hero" data-bg="#E85D04">
-      <div class="hero-inner">
-        <h1>BOOK<b>></b>BLIND</h1>
-        <p>Digital Library</p>
+<!-- The $1,000 Math -->
+<section class="section" id="math" style="background: var(--paper-2);">
+  <div class="wrap">
+    <div class="sec-head">
+      <div>
+        <div class="sec-num"><span class="bar"></span>02 / Chapter 01</div>
+        <h2 class="sec-title">The <em>$1,000</em> math, on one page.</h2>
       </div>
-    </section>
+      <p class="sec-kicker">Strip the romance out of this number and look at what $1,000 / month actually requires. There are exactly five ways to get there. One of them is one mid-ticket project a week. That's the whole game.</p>
+    </div>
 
-    <section id="manifesto" data-bg="#F0EBE3">
-      <div class="mf-line left"><span>WITH</span></div>
-      <div class="mf-line right"><span>THE</span></div>
-      <div class="mf-line center"><span>POWER</span></div>
-      <div class="mf-line left"><span>OF</span></div>
-      <div class="mf-line right"><span>WORDS</span></div>
-      <div class="mf-line left"><span>YOU</span></div>
-      <div class="mf-line right"><span>CAN</span></div>
-      <div class="mf-line center"><span>NOW</span></div>
-      <div class="mf-line left"><span>STEP</span></div>
-      <div class="mf-line right"><span>RIGHT</span></div>
-      <div class="mf-line center"><span>INTO</span></div>
-      <div class="mf-line left"><span>THE</span></div>
-      <div class="mf-line right"><span>STORIES.</span></div>
-      <div class="mf-line center"><span>THE FEELING</span></div>
-      <div class="mf-line left"><span>IS UNREAL.</span></div>
-    </section>
+    <div class="math-grid">
+      <div>
+        <table class="math-table">
+          <thead>
+            <tr><th>Path</th><th>Price point</th><th>Volume / mo</th><th>Per week</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="path">One big client</td><td class="num">$1,000 retainer</td><td class="num">1 client</td><td class="num">—</td></tr>
+            <tr class="hi"><td class="path">Mid-ticket service</td><td class="num">$250 / project</td><td class="num">4 projects</td><td class="num">1 / week</td></tr>
+            <tr><td class="path">Low-ticket digital</td><td class="num">$27 product</td><td class="num">37 sales</td><td class="num">9–10 / week</td></tr>
+            <tr><td class="path">Tripwire offer</td><td class="num">$9 product</td><td class="num">112 sales</td><td class="num">28 / week</td></tr>
+            <tr><td class="path">Affiliate / commission</td><td class="num">varies</td><td class="num">varies</td><td class="num">—</td></tr>
+          </tbody>
+        </table>
+        <p class="math-pointer">Look at row two. One mid-ticket project per week. If you can convince one small business to pay you $250 for something they need — you're at $1,000 / month.</p>
+      </div>
 
-    <section class="svc on-orange" id="svc1" data-bg="#E85D04">
-      <div class="svc-visual">
-        <div class="svc-tag">Our Promise</div>
-        <div class="pw">
-          <div class="sh-ast"><span class="b3"></span></div>
+      <div>
+        <div class="stat-cluster">
+          <div class="stat-cell">
+            <div class="stat-v"><em>$1K</em></div>
+            <div class="stat-k">Monthly target</div>
+          </div>
+          <div class="stat-cell">
+            <div class="stat-v">90</div>
+            <div class="stat-k">Days to get there</div>
+          </div>
+          <div class="stat-cell">
+            <div class="stat-v">10</div>
+            <div class="stat-k">Focused hrs / wk</div>
+          </div>
+        </div>
+        <p class="stat-foot">Ten focused hours a week is not aspirational. It's the floor. If you can't find ten hours a week to build something for yourself, that's not a time problem — it's a priority problem, and no book is going to fix it.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Five paths interactive -->
+<section class="section" id="paths">
+  <div class="wrap">
+    <div class="sec-head">
+      <div>
+        <div class="sec-num"><span class="bar"></span>03 / Chapter 03</div>
+        <h2 class="sec-title">The <em>Five Paths</em>. Pick one.</h2>
+      </div>
+      <p class="sec-kicker">The single biggest predictor of success is not which path you choose — it's whether you stay on one long enough to learn the unteachable parts. Click through. Find yours.</p>
+    </div>
+
+    <div class="paths-shell">
+      <div class="path-tabs" id="pathTabs">
+        <!-- filled by JS -->
+      </div>
+      <div id="pathPanel"></div>
+    </div>
+  </div>
+</section>
+
+<!-- Sample reader -->
+<section class="section" id="sample" style="background: var(--paper-2);">
+  <div class="wrap">
+    <div class="sec-head">
+      <div>
+        <div class="sec-num"><span class="bar"></span>04 / Live preview</div>
+        <h2 class="sec-title">Read inside the book.</h2>
+      </div>
+      <p class="sec-kicker">Three sample pages, lifted straight from the book. No mockup, no marketing copy — the exact words the people who buy this download.</p>
+    </div>
+
+    <div class="reader-tabs" id="readerTabs">
+      <button class="reader-tab active" data-tab="0">Foreword · A note before you start</button>
+      <button class="reader-tab" data-tab="1">Ch. 04 · Case study — 11 days to first client</button>
+      <button class="reader-tab" data-tab="2">Ch. 12 · The pricing rules</button>
+    </div>
+
+    <div class="reader-frame">
+      <div class="reader-rail">
+        <div class="pgnum" id="sampleHead">FOREWORD — P. 05</div>
+      </div>
+      <div class="reader-doc" id="readerDoc">
+        <!-- filled by JS -->
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- What's inside / TOC -->
+<section class="section" id="inside">
+  <div class="wrap">
+    <div class="sec-head">
+      <div>
+        <div class="sec-num"><span class="bar"></span>05 / Table of contents</div>
+        <h2 class="sec-title">Everything <em>inside</em> the 53 pages.</h2>
+      </div>
+      <p class="sec-kicker">Read straight through once for the full map. Then go back to your chosen path and work through it with a notebook. This is a working document — not a novel.</p>
+    </div>
+
+    <div class="toc-grid" id="tocGrid"></div>
+  </div>
+</section>
+
+<!-- Bonuses -->
+<section class="section dark" id="bonuses">
+  <div class="wrap">
+    <div class="sec-head">
+      <div>
+        <div class="sec-num" style="color: rgba(242,236,223,0.55);"><span class="bar" style="background: rgba(242,236,223,0.55);"></span>06 / Bonuses</div>
+        <h2 class="sec-title" style="color: var(--paper);">Three included <em>bonuses</em>.</h2>
+      </div>
+      <p class="sec-kicker">Three short books bolted onto the back of the main blueprint. Free with the download. The Swipe File alone is worth the cover price.</p>
+    </div>
+
+    <div class="bonus-grid">
+      <div class="bonus-card" style="background: var(--paper-2);">
+        <div class="b-tag"><span>Bonus 01 · Pricing</span><span class="b-val">$19 value</span></div>
+        <h3 class="b-title">The Pricing Playbook</h3>
+        <p class="b-sub">Why your first stated price should make you mildly uncomfortable. The three pricing rules, a working three-tier structure ($497 / $897 / $1,497) and exact scripts for the four objections you'll always hear.</p>
+        <div class="b-foot">Ch. 12 · 4 pages · Print-friendly</div>
+      </div>
+      <div class="bonus-card" style="background: var(--paper-2);">
+        <div class="b-tag"><span>Bonus 02 · Mindset</span><span class="b-val">$19 value</span></div>
+        <h3 class="b-title">The Operator's Mindset</h3>
+        <p class="b-sub">Five shifts that separate the people who make it from the people who don't. The five questions to ask yourself every Sunday for 20 minutes — the single most valuable habit in this book.</p>
+        <div class="b-foot">Ch. 13 · 3 pages · Print-friendly</div>
+      </div>
+      <div class="bonus-card" style="background: var(--paper-2);">
+        <div class="b-tag"><span>Bonus 03 · Swipe File</span><span class="b-val">$29 value</span></div>
+        <h3 class="b-title">Scripts &amp; Templates</h3>
+        <p class="b-sub">Three cold-outreach templates that actually get replies. The follow-up sequence (Day 0 / 3 / 7 / 14 / 30). The full sales-page anatomy that converts. Copy-paste, edit, send.</p>
+        <div class="b-foot">Appendix A · 6 pages · Plain text</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Pull quote -->
+<section class="section" id="author">
+  <div class="wrap pull">
+    <div class="pull-attr">
+      <div style="font-family:'Instrument Serif',serif;font-size:32px;letter-spacing:-0.01em;color:var(--ink);text-transform:none;line-height:1.05;">Foreword</div>
+      <div style="margin-top: 12px;">A note before you start · p. 05</div>
+      <div style="margin-top: 24px; font-family: 'Newsreader', serif; font-style: italic; font-size: 16px; text-transform: none; letter-spacing: 0; color: var(--ink-2); line-height: 1.4;">Written by the Level Up Lab desk — operators, not gurus.</div>
+    </div>
+    <div>
+      <p class="pull-q">The $1,000 / month mark matters because it's the first real proof that online income is not theoretical for you. Once you've crossed it, scaling to $3K, $5K, or $10K is mostly repetition — not reinvention.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Offer -->
+<section class="section" id="offer" style="background: var(--paper-2);">
+  <div class="wrap">
+    <div class="sec-head">
+      <div>
+        <div class="sec-num"><span class="bar"></span>07 / The Offer</div>
+        <h2 class="sec-title">One file. <em>$27.</em></h2>
+      </div>
+      <p class="sec-kicker">No tiers, no upsells, no "premium edition" hidden behind a $497 paywall. One download, three bonuses, lifetime updates.</p>
+    </div>
+
+    <div class="offer-box">
+      <div class="offer-l">
+        <div class="offer-tag">What you get</div>
+        <h3 class="offer-title">$1,000/Month — The Real Beginner Blueprint</h3>
+        <ul class="offer-list">
+          <li>The main book · 53 pages, 13 chapters, 3 appendices <span class="v">$27</span></li>
+          <li>Bonus · The Pricing Playbook <span class="v">$19</span></li>
+          <li>Bonus · The Operator's Mindset <span class="v">$19</span></li>
+          <li>Bonus · Swipe File of cold-outreach scripts <span class="v">$29</span></li>
+          <li>The 30-Day Action Plan (day-by-day) <span class="v">incl.</span></li>
+          <li>Tools &amp; Resources (everything free or near-free) <span class="v">incl.</span></li>
+          <li>Lifetime updates to future editions <span class="v">incl.</span></li>
+        </ul>
+        <div style="font-family: 'Geist Mono', monospace; font-size: 12px; color: var(--ink-3); letter-spacing: 0.05em;">
+          Total stated value · <s>$94+</s> &nbsp;·&nbsp; Your price today · <strong style="color: var(--accent); font-size: 14px;">$27</strong>
         </div>
       </div>
-      <div class="svc-bottom" id="sb1">
-        <span class="svc-num">001</span><span class="svc-title">DISCOVER</span>
-        <div class="svc-desc">WE<br>CURATE EXCEPTIONAL TITLES<br>SURFACE HIDDEN MASTERPIECES<br>MATCH BOOKS TO YOUR
-          SOUL<br>AND OPEN DOORS TO NEW WORLDS</div>
-      </div>
-    </section>
-
-    <section class="svc on-dark" id="svc2" data-bg="#0d0d0d">
-      <div class="svc-visual">
-        <div class="svc-tag">Our Method</div>
-        <div class="pw">
-          <div class="sh-cross"></div>
+      <div class="offer-r">
+        <div class="price-block">
+          <div class="crossed">$94 value</div>
+          <div class="now">$27<span class="cents">.00</span></div>
+          <div class="desc" style="margin-top: 12px;">USD · One-time payment</div>
+          <a href="#" class="btn-primary" onclick="event.preventDefault();alert('Stripe checkout would open here.');">
+            <span>Download instantly</span>
+            <span class="arrow">→</span>
+          </a>
+        </div>
+        <div class="offer-guarantees">
+          <div class="row"><span class="icon">✓</span> 30-day no-questions refund</div>
+          <div class="row"><span class="icon">✓</span> Instant PDF, EPUB, print-ready</div>
+          <div class="row"><span class="icon">✓</span> Pay once · lifetime updates</div>
+          <div class="row"><span class="icon">✓</span> Stripe · Apple Pay · Card</div>
         </div>
       </div>
-      <div class="svc-bottom" id="sb2">
-        <span class="svc-num">002</span><span class="svc-title">EXPLORE</span>
-        <div class="svc-desc">WE<br>BUILD IMMERSIVE EXPERIENCES<br>CREATE CURATED COLLECTIONS<br>CONNECT READERS TO
-          AUTHORS<br>AND IGNITE THE LOVE OF READING</div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" id="faq">
+  <div class="wrap">
+    <div class="sec-head">
+      <div>
+        <div class="sec-num"><span class="bar"></span>08 / Honest answers</div>
+        <h2 class="sec-title">Frequently asked, <em>plainly</em> answered.</h2>
       </div>
-    </section>
+      <p class="sec-kicker">No marketing-speak. If something below tells you this book isn't for you, that's a feature.</p>
+    </div>
 
-    <section class="svc on-orange" id="svc3" data-bg="#E85D04">
-      <div class="svc-visual">
-        <div class="svc-tag">Our Delivery</div>
-        <div class="pw">
-          <div class="sh-ring"></div>
-        </div>
+    <div class="faq-list" id="faqList"></div>
+  </div>
+</section>
+
+<!-- Final CTA -->
+<section class="final" id="final">
+  <div class="wrap">
+    <h2>The amateur waits for inspiration. The <em>professional</em> sends ten emails before lunch.</h2>
+    <p>This book gets you to your first $1,000 — and turns the next month into a system you actually run, not a fantasy you scroll through.</p>
+    <a href="#offer" class="btn-primary">
+      <span>Get the blueprint · $27</span>
+      <span class="arrow">→</span>
+    </a>
+    <div class="reassure" style="color: rgba(242,236,223,0.6); margin-top: 24px;">
+      <span class="check" style="color: #5ec273;">✓</span> Instant PDF
+      &nbsp;·&nbsp;
+      <span class="check" style="color: #5ec273;">✓</span> 30-day refund
+      &nbsp;·&nbsp;
+      <span class="check" style="color: #5ec273;">✓</span> Lifetime updates
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="foot">
+  <div class="wrap foot-inner">
+    <div>© 2026 Level Up Lab · All rights reserved</div>
+    <div>levelup.lab</div>
+    <div>For educational purposes · Not financial advice</div>
+  </div>
+</footer>
+
+<script>
+/* ===== Paths ===== */
+const PATHS = [
+  {
+    n: "01",
+    title: "Service Arbitrage",
+    tag: "Fastest cash",
+    sub: "Sell skills you don't even have (yet).",
+    body: "Sell a specific service to a specific type of business, and deliver it yourself — or through someone you hire on Upwork / Fiverr for less than the client pays you. No product to build, no inventory, no shipping. Clients pay upfront. You can charge $250–$1,500 from week one.",
+    stats: [
+      { k: "Time to first $", v: "<em>~11</em> days" },
+      { k: "Per-project price", v: "$250–$1,500" },
+      { k: "Skills required", v: "Outreach" },
+      { k: "Startup cost", v: "$0–$200" }
+    ],
+    when: "Best if you have <strong>time, willingness to talk to people, and $0–$200 to start.</strong>",
+    dark: false
+  },
+  {
+    n: "02",
+    title: "Digital Products",
+    tag: "Highest leverage",
+    sub: "Sell what you already know.",
+    body: "Package knowledge into a PDF, template pack, Notion system or mini-course. Sell once, sell forever. The dream model — and the most misunderstood. Works only after you've solved the traffic problem.",
+    stats: [
+      { k: "Price points", v: "$7–$197" },
+      { k: "Margin", v: "<em>~95%</em>" },
+      { k: "Required audience", v: "500+" },
+      { k: "Time to build v1", v: "1–2 weeks" }
+    ],
+    when: "Best if you have <strong>a specific skill, comfort creating content, and patience for traffic.</strong>",
+    dark: false
+  },
+  {
+    n: "03",
+    title: "Local Outreach",
+    tag: "Most overlooked",
+    sub: "$1K clients from cold messages.",
+    body: "Cold-pitch small US businesses — roofers, HVAC, dentists, med-spas — on services they desperately need but rarely buy well. Real bank accounts, real revenue, decisions made fast. The most overlooked path on the internet because it's not glamorous.",
+    stats: [
+      { k: "Avg. retainer", v: "$300–$1,000" },
+      { k: "Reply rate", v: "~3%" },
+      { k: "Close rate", v: "<em>~25%</em>" },
+      { k: "Time to $1K", v: "30–60 days" }
+    ],
+    when: "Best if you have <strong>thick skin, decent writing, and can DM or email at scale.</strong>",
+    dark: true
+  },
+  {
+    n: "04",
+    title: "Content-to-Cash",
+    tag: "Highest ceiling",
+    sub: "Build a small audience that buys.",
+    body: "Build a focused audience on one platform — X, Instagram, YouTube, TikTok, LinkedIn. Monetize through products, services, sponsorships, affiliate deals. Slowest path. Highest long-term ceiling. Most quitters live here.",
+    stats: [
+      { k: "Followers needed", v: "<em>~5,000</em>" },
+      { k: "Posts / week", v: "5" },
+      { k: "Months to monetize", v: "12–18" },
+      { k: "Long-term ceiling", v: "Uncapped" }
+    ],
+    when: "Best if you have <strong>opinions worth sharing and the willingness to post 5×/week for months.</strong>",
+    dark: false
+  },
+  {
+    n: "05",
+    title: "The Hybrid Stack",
+    tag: "How operators win",
+    sub: "How operators actually work.",
+    body: "Nobody who makes real money online runs just one path. Service work pays the bills and teaches you what to build. The product you build is informed by real pain. The content you create has real case studies behind it. Each stage de-risks the next.",
+    stats: [
+      { k: "Stage 1 · 1–3mo", v: "Service" },
+      { k: "Stage 2 · 4–6mo", v: "Product" },
+      { k: "Stage 3 · 7–9mo", v: "Content" },
+      { k: "Stage 4 · 10–12mo", v: "<em>Flywheel</em>" }
+    ],
+    when: "Best if you have <strong>3+ months of momentum in any single path.</strong>",
+    dark: false
+  }
+];
+
+function renderPaths(active = 0) {
+  const tabs = document.getElementById('pathTabs');
+  tabs.innerHTML = PATHS.map((p, i) => `
+    <button class="path-tab ${i === active ? 'active' : ''}" data-i="${i}">
+      <span class="pnum">${p.n}</span>
+      <span class="ptitle">${p.title}</span>
+    </button>
+  `).join('');
+
+  const p = PATHS[active];
+  const panel = document.getElementById('pathPanel');
+  panel.innerHTML = `
+    <div class="path-panel ${p.dark ? 'dark' : ''}">
+      <div class="pp-corner">${p.tag}</div>
+      <div class="pp-head"><span class="pp-pnum">Path ${p.n}</span></div>
+      <h3 class="pp-title">${p.title}.</h3>
+      <p class="pp-sub">${p.sub}</p>
+      <div class="pp-stats">
+        ${p.stats.map(s => `<div class="pp-stat"><div class="k">${s.k}</div><div class="v">${s.v}</div></div>`).join('')}
       </div>
-      <div class="svc-bottom" id="sb3">
-        <span class="svc-num">003</span><span class="svc-title">READ</span>
-        <div class="svc-desc">WE<br>DELIVER BOOKS INSTANTLY<br>ACROSS ALL YOUR DEVICES<br>WITH BEAUTIFUL
-          TYPOGRAPHY<br>AND SO YOU READ MORE, EVERY DAY</div>
+      <p class="pp-body">${p.body}</p>
+      <p class="pp-when">${p.when}</p>
+    </div>
+  `;
+
+  tabs.querySelectorAll('.path-tab').forEach(b => {
+    b.addEventListener('click', () => renderPaths(Number(b.dataset.i)));
+  });
+}
+renderPaths(0);
+
+/* ===== Reader sample ===== */
+const SAMPLES = [
+  {
+    head: "FOREWORD — P. 05",
+    tag: "Foreword · A note before you start",
+    title: "Let me save you some time.",
+    sub: "If you bought this guide hoping for a magic loophole — close the file.",
+    paras: [
+      { drop: true, t: "If you bought this guide hoping for a magic loophole, a secret platform nobody knows about, or a passive-income scheme that runs while you sleep — close the file and ask for a refund. I'm not here to sell you a fantasy." },
+      { t: "What you're holding is the playbook I wish I had when I was starting out. It's the difference between scrolling guru content for six months and actually putting your first $1,000 in the bank from work you control." },
+      { t: "The $1,000 / month mark matters because it's the first real proof that online income is not theoretical for you. It's the floor that turns <em>maybe one day</em> into <em>this is working.</em>" }
+    ],
+    callout: { k: "How to read this book", t: "Read straight through once to get the full map. Then go back to your chosen Path and work through it with a notebook. Skip the chapters that don't apply." }
+  },
+  {
+    head: "CHAPTER 04 — P. 17",
+    tag: "Chapter 04 · Path 1 · Case study",
+    title: "Zero to first client in 11 days.",
+    sub: "Here's a real arc that plays out every week, with names changed.",
+    paras: [
+      { drop: true, t: "<strong>Day 1.</strong> A 22-year-old in Tel Aviv decides he'll sell websites to roofers in Cleveland, Ohio. Picks Wix Studio because it's free to build and easy to hand off." },
+      { t: "<strong>Day 2–3.</strong> Builds one demo site. <em>Cleveland Premier Roofing</em> — completely fictional, but it looks legit. Adds it to a one-page Carrd portfolio." },
+      { t: "<strong>Day 4–5.</strong> Pulls a list of 80 roofing companies in Northeast Ohio from Google Maps. Notes which ones have terrible websites. Almost all of them." },
+      { t: "<strong>Day 9.</strong> First reply. <em>“What would this cost?”</em> Answer: $650, with one round of revisions, delivered in 7 days, 50% upfront." }
+    ],
+    callout: { k: "What this case study really teaches", t: "Notice what's <em>not</em> in this story: no fancy website. No personal brand. No Instagram with 10K followers. No business plan. Just: pick a service → build proof → make a list → send messages → close." }
+  },
+  {
+    head: "CHAPTER 12 — P. 42",
+    tag: "Chapter 12 · Bonus · Pricing",
+    title: "Anchor high, negotiate down (never up).",
+    sub: "Pricing is where 90% of beginners lose 90% of their potential income.",
+    paras: [
+      { drop: true, t: "Your first stated price should make you mildly uncomfortable. If you'd happily accept $300 for a website, ask for $750. The worst that happens is they say <em>too expensive</em> and you have room to negotiate. The best is they say yes — and you just made 2.5× what you'd have settled for." },
+      { t: "<strong>Rule 2 · Price the outcome, not the time.</strong> A website that brings a roofer two extra jobs per month is worth $20K to him — not $400. Talk results in your pricing conversation, never hours." },
+      { t: "<strong>Rule 3 · Bundle for clarity, not for discount.</strong> Three-tier pricing — good / better / best — consistently outperforms single prices. Most buyers pick the middle. Your job is to design the middle tier to be exactly what you want to sell." }
+    ],
+    callout: { k: "The price you settle for is your ceiling", t: "Whatever price you accept on a deal becomes your new internal benchmark. Your first price isn't just about that deal — it's about the trajectory." }
+  }
+];
+
+function renderSample(idx = 0) {
+  const s = SAMPLES[idx];
+  document.getElementById('sampleHead').textContent = s.head;
+  const doc = document.getElementById('readerDoc');
+  doc.innerHTML = `
+    <div class="reader-tag">${s.tag}</div>
+    <h3 class="reader-h">${s.title}</h3>
+    <p class="reader-sub">${s.sub}</p>
+    <div class="reader-body">
+      ${s.paras.map((p, i) => `<p class="${i === 0 && p.drop ? 'drop' : ''}">${p.t}</p>`).join('')}
+      <div class="reader-callout">
+        <div class="cl-k">${s.callout.k}</div>
+        ${s.callout.t}
       </div>
-    </section>
-
-    <section id="books" data-bg="#0a0a0a">
-      <div class="sec-label">The Collection</div>
-      <div class="sec-head">BROWSE<br>OUR<br>LIBRARY</div>
-      <div class="cats" id="cats"></div>
-      <div class="books-grid" id="books-grid"></div>
-    </section>
-
-    <section id="cta" data-bg="#E85D04">
-      <div class="cta-h" id="cta-h">JOIN<br>THE<br>BLIND<br>SIDE</div>
-      <a href="#" class="cta-link" id="cta-link"><span>ENTER THE BOOK</span></a>
-      <div class="cta-note">1,000+ curated digital books &nbsp;·&nbsp; New titles every week</div>
-      <div class="band">
-        <div class="band-in">BOOKBLIND — READ WITH PURPOSE — DISCOVER WORLDS — &nbsp; BOOKBLIND — READ WITH PURPOSE —
-          DISCOVER WORLDS — &nbsp;</div>
-      </div>
-    </section>
-
-    <footer data-bg="#080808">
-      <div class="ft-top">
-        <div class="ft-logo">BOOK<b>></b>BLIND</div>
-        <div class="ft-links">
-          <a href="#">About</a><a href="#">Books</a>
-          <a href="#">Authors</a><a href="#">Pricing</a><a href="#">Contact</a>
-        </div>
-      </div>
-      <div class="ft-bot"><span>© 2024 BookBlind</span><span>Digital Books Platform</span></div>
-    </footer>
-  </main>
-
-  <script>
-    const BOOKS = [
-      {
-        id: 1, num: '01', title: 'The Midnight Library', author: 'Matt Haig', genre: 'Fiction', color: '#c44b04', pages: 288, price: '$9.99',
-        desc: 'Between life and death there is a library. Every book is a life you could have lived. Nora Seed must choose which life is truly worth living.',
-        quote: 'A meditation on regret, possibility, and the infinite versions of who we could become.',
-        themes: [{ title: 'Parallel Lives', text: 'Each book in the library represents a different choice — and a different life lived.' }, { title: 'Regret & Hope', text: 'Explores how the roads not taken haunt us, and how we can make peace with who we are.' }, { title: 'The Will to Live', text: 'A profound look at what makes life worth continuing when all seems lost.' }],
-        audience: ['Readers going through major life transitions or crossroads', 'Anyone who has ever wondered "what if I had chosen differently?"', 'Fans of philosophical fiction with an emotional punch']
-      },
-      {
-        id: 2, num: '02', title: 'Klara and the Sun', author: 'Kazuo Ishiguro', genre: 'Sci-Fi', color: '#1a1a2e', pages: 307, price: '$8.99',
-        desc: 'An Artificial Friend named Klara observes the world with extraordinary perception and longs to understand what it truly means to love.',
-        quote: 'A quiet, devastating meditation on consciousness, devotion, and what it means to be human.',
-        themes: [{ title: 'Artificial Consciousness', text: 'What does it mean to feel, observe, and understand the world as a machine?' }, { title: 'Love & Sacrifice', text: 'Klara\'s devotion raises deep questions about the nature of love when it comes from unexpected places.' }, { title: 'The Cost of Progress', text: 'Technology and humanity collide in this near-future world of privilege and inequality.' }],
-        audience: ['Sci-fi readers who prefer ideas over action', 'Philosophy lovers exploring what defines personhood', 'Anyone moved by stories of quiet, unconditional devotion']
-      },
-      {
-        id: 3, num: '03', title: 'The Secret History', author: 'Donna Tartt', genre: 'Mystery', color: '#0f2a0f', pages: 559, price: '$10.99',
-        desc: 'A dark, bewitching tale of a group of classics students who cross the fine line between beauty and the unforgivable.',
-        quote: 'Beauty is terror. Whatever we call beautiful, we quiver before it.',
-        themes: [{ title: 'Aesthetic Obsession', text: 'The pursuit of beauty and transcendence taken to its most dangerous extreme.' }, { title: 'Moral Collapse', text: 'How a group slowly justifies the unjustifiable — and lives with the aftermath.' }, { title: 'Elite Isolation', text: 'The seductive and corrosive power of exclusive, insular intellectual worlds.' }],
-        audience: ['Dark academia enthusiasts', 'Readers who love morally complex, unreliable characters', 'Fans of slow-burn literary suspense']
-      },
-      {
-        id: 4, num: '04', title: 'The Atlas Six', author: 'Olivie Blake', genre: 'Fantasy', color: '#3a0a0a', pages: 368, price: '$9.99',
-        desc: 'Six exceptional magicians are invited into the world\'s most exclusive secret society. Not all of them will survive the year.',
-        quote: 'Power is never given. It is taken — and sometimes, it takes you back.',
-        themes: [{ title: 'Ambition & Power', text: 'Each of the six will do almost anything to be among the five who remain.' }, { title: 'Knowledge as Currency', text: 'The Alexandrian Society hoards the world\'s most dangerous knowledge — and knowledge has a price.' }, { title: 'Trust & Betrayal', text: 'With five spots and six candidates, alliances form and fracture in unexpected ways.' }],
-        audience: ['Fantasy readers who love morally grey anti-heroes', 'Fans of academia, arcane societies, and competitive dynamics', 'Readers of adult fantasy who want depth alongside magic']
-      },
-      {
-        id: 5, num: '05', title: 'Project Hail Mary', author: 'Andy Weir', genre: 'Sci-Fi', color: '#0d2137', pages: 476, price: '$9.99',
-        desc: 'A lone astronaut wakes up with no memory on a desperate mission that could save humanity — and makes the most unlikely friendship.',
-        quote: 'Science is the most powerful tool humanity has — and friendship might be the second.',
-        themes: [{ title: 'Problem Solving Under Pressure', text: 'A scientist\'s brain is both the hero and the tool — watch ingenuity in real time.' }, { title: 'First Contact', text: 'What if our first meeting with alien life was driven not by conflict, but by a shared problem?' }, { title: 'Self-Sacrifice & Hope', text: 'One man far from home, with no way back, choosing humanity\'s survival over his own.' }],
-        audience: ['Hard sci-fi readers who love real science woven into story', 'Anyone who loved The Martian — this is even better', 'Readers looking for warmth, humour, and wonder alongside high stakes']
-      },
-      {
-        id: 6, num: '06', title: 'Cloud Cuckoo Land', author: 'Anthony Doerr', genre: 'Literary', color: '#2a1f14', pages: 622, price: '$11.99',
-        desc: 'Five characters across centuries are connected by a single ancient story — a testament to the power of words to survive time.',
-        quote: 'Stories outlast their tellers. They outlast empires. They outlast the stars.',
-        themes: [{ title: 'The Persistence of Story', text: 'A fictional ancient text threads through five lives across 600 years, proving that stories are immortal.' }, { title: 'Preservation & Loss', text: 'What we choose to save — books, memories, cultures — defines what survives us.' }, { title: 'Connection Across Time', text: 'Strangers separated by centuries are bound by a single manuscript neither has read in full.' }],
-        audience: ['Literary fiction fans who love ambitious, multi-generational structures', 'Readers who treasure books about books', 'Those who want to feel the full weight of history and story']
-      },
-      {
-        id: 7, num: '07', title: 'Normal People', author: 'Sally Rooney', genre: 'Fiction', color: '#2a1206', pages: 266, price: '$8.99',
-        desc: 'Two people move in and out of each other\'s orbits, shaped by desire, class, and a love neither knows how to name.',
-        quote: 'They had always been close, even when they weren\'t together — even when they were strangers.',
-        themes: [{ title: 'Class & Power', text: 'The social gap between Connell and Marianne shapes every interaction in ways neither fully understands.' }, { title: 'Communication & Silence', text: 'Most of what breaks them apart is what they can\'t bring themselves to say.' }, { title: 'Identity Formation', text: 'Who do we become as we move through our twenties — and how much of that is shaped by who loves us?' }],
-        audience: ['Readers in their twenties navigating love and identity', 'Fans of quiet, character-driven contemporary fiction', 'Anyone who has been deeply connected to someone they couldn\'t fully reach']
-      },
-      {
-        id: 8, num: '08', title: 'Dune', author: 'Frank Herbert', genre: 'Sci-Fi', color: '#4a3800', pages: 688, price: '$12.99',
-        desc: 'The science fiction masterpiece. A desert planet, a chosen one, and a universe-shaping destiny. The one book to read before you die.',
-        quote: 'I must not fear. Fear is the mind-killer. Fear is the little-death that brings total obliteration.',
-        themes: [{ title: 'Ecology & Power', text: 'A desert planet whose spice controls the universe — resource scarcity as the engine of all politics.' }, { title: 'Prophecy & Manipulation', text: 'Is Paul the messiah? Or a myth deliberately manufactured to serve an agenda?' }, { title: 'The Hero\'s Burden', text: 'What happens to a person — and to a people — when one individual becomes a god?' }],
-        audience: ['Anyone who hasn\'t yet read the most important sci-fi novel ever written', 'Fans of epic world-building with philosophical depth', 'Readers who want to understand where Star Wars, Game of Thrones, and half of modern fantasy came from']
-      },
-      {
-        id: 9, num: '09', title: 'Gone Girl', author: 'Gillian Flynn', genre: 'Thriller', color: '#1a1a1a', pages: 422, price: '$9.99',
-        desc: 'On their anniversary, Nick\'s wife Amy disappears. The media circus begins. The lies unravel. Nothing is what it seems.',
-        quote: 'We are the most perfect couple. A house of cards, beautifully built.',
-        themes: [{ title: 'Performance in Marriage', text: 'Both Nick and Amy are performing versions of themselves — and neither can stop.' }, { title: 'Media & Public Narrative', text: 'How a crime story is told on TV shapes reality itself, and both characters know it.' }, { title: 'Toxic Codependency', text: 'A masterclass in how two people can bring out the absolute worst in each other.' }],
-        audience: ['Psychological thriller fans who love unreliable narrators', 'Readers who enjoy dissecting gender roles and societal expectations', 'Anyone who wants to be genuinely shocked by where a plot can go']
-      },
-      {
-        id: 10, num: '10', title: 'The Name of the Wind', author: 'Patrick Rothfuss', genre: 'Fantasy', color: '#0d1a2a', pages: 662, price: '$11.99',
-        desc: 'The story of Kvothe — magician, musician, adventurer — who grew from legend to a broken man hiding in plain sight.',
-        quote: 'I have stolen princesses back from sleeping barrow kings. I have spent the night with Felurian and left with both my sanity and my life.',
-        themes: [{ title: 'Legend vs. Reality', text: 'The gap between who the world thinks Kvothe is, and who he actually is, drives everything.' }, { title: 'Mastery & Obsession', text: 'Kvothe\'s relentless pursuit of knowledge — of sympathy, of music, of the Chandrian — is both his gift and his flaw.' }, { title: 'Poverty & Survival', text: 'One of the most honest portrayals in fantasy of what it costs to be brilliant and broke.' }],
-        audience: ['Fantasy readers who prize prose quality as much as plot', 'Fans of intricate magic systems with internal logic', 'Readers who want a protagonist worth arguing about for years']
-      },
-      {
-        id: 11, num: '11', title: 'The Silent Patient', author: 'Alex Michaelides', genre: 'Thriller', color: '#150a0a', pages: 336, price: '$9.99',
-        desc: 'A famous painter shoots her husband five times and then never speaks again. One therapist becomes obsessed with uncovering why.',
-        quote: 'The truth is rarely pure and never simple.',
-        themes: [{ title: 'Silence as Power', text: 'Alicia\'s refusal to speak is both punishment and protection — for reasons no one expects.' }, { title: 'The Unreliable Mind', text: 'Both the patient and her therapist are hiding things, and the reader is the last to know.' }, { title: 'Obsession & Projection', text: 'Why does Theo become so fixated on Alicia? The answer says more about him than her.' }],
-        audience: ['Thriller readers who love tightly wound psychological puzzles', 'Fans of Agatha Christie-style reveals that recontextualize everything', 'Readers who enjoy exploring trauma through the lens of fiction']
-      },
-      {
-        id: 12, num: '12', title: 'The Alchemist', author: 'Paulo Coelho', genre: 'Fiction', color: '#0a1a05', pages: 208, price: '$7.99',
-        desc: 'A young shepherd follows his dream across the Egyptian desert. A timeless fable about listening to your heart and finding your destiny.',
-        quote: 'And, when you want something, all the universe conspires in helping you to achieve it.',
-        themes: [{ title: 'Personal Legend', text: 'The idea that each of us has a unique destiny — and the courage required to pursue it.' }, { title: 'Omens & Listening', text: 'How to read the language of the world and trust signs larger than logic.' }, { title: 'The Journey Over the Destination', text: 'What Santiago finds is not what he expected — and that is precisely the point.' }],
-        audience: ['Readers seeking inspiration at a crossroads in life', 'Those drawn to spiritual and philosophical fables', 'Anyone who needs permission to pursue something they\'ve deferred too long']
-      },
-      {
-        id: 13, num: '13', title: 'Big Little Lies', author: 'Liane Moriarty', genre: 'Mystery', color: '#1a1430', pages: 460, price: '$9.99',
-        desc: 'Three women, one murder, and a community of secrets. A sharp story about the lies we tell to protect the ones we love.',
-        quote: 'Everyone tells little lies. It\'s the big ones that kill you.',
-        themes: [{ title: 'Domestic Violence', text: 'One of fiction\'s most unflinching yet compassionate portrayals of abuse within a marriage.' }, { title: 'Female Friendship', text: 'The bonds between Madeline, Celeste, and Jane are the true heart of the novel.' }, { title: 'Social Performance', text: 'A satirical look at the performative perfection of affluent suburban parenthood.' }],
-        audience: ['Readers who enjoy sharp, character-driven mysteries', 'Fans of stories that blend dark themes with wit and warmth', 'Those interested in authentic portrayals of women\'s inner lives']
-      },
-      {
-        id: 14, num: '14', title: 'A Little Life', author: 'Hanya Yanagihara', genre: 'Literary', color: '#0a0a0a', pages: 720, price: '$12.99',
-        desc: 'Four friends navigate New York City across four decades. A devastating, extraordinary novel about trauma, love, and survival.',
-        quote: 'Wasn\'t friendship its own kind of love? Wasn\'t it the deepest love of all?',
-        themes: [{ title: 'Trauma & Its Aftermath', text: 'The long shadow that childhood abuse casts across an entire life, told without flinching.' }, { title: 'The Nature of Male Friendship', text: 'Four men who love each other with a depth rarely depicted in literary fiction.' }, { title: 'The Question of Recovery', text: 'Can someone truly heal? Or is survival itself the only goal — and is that enough?' }],
-        audience: ['Readers prepared for an emotionally demanding literary masterwork', 'Those interested in the psychology of trauma and survival', 'Anyone who wants fiction that respects the full weight of human suffering']
-      },
-      {
-        id: 15, num: '15', title: 'Fourth Wing', author: 'Rebecca Yarros', genre: 'Fantasy', color: '#1a0a1a', pages: 517, price: '$10.99',
-        desc: 'Violet Sorrengail is sent to the deadliest place in the kingdom — dragon rider training. Some bonds are forged in fire.',
-        quote: 'Dragons don\'t make mistakes. If one chooses you, it\'s because you\'re worth choosing.',
-        themes: [{ title: 'Chosen & Tested', text: 'Violet shouldn\'t survive training — but something in her refuses to break.' }, { title: 'Dragons as Soulmates', text: 'The bond between rider and dragon is the emotional core: intense, volatile, and transformative.' }, { title: 'War & Consequence', text: 'Behind the romance and magic lies a war with stakes that become deeply personal.' }],
-        audience: ['Fantasy romance readers who want genuine world-building alongside the heat', 'Fans of morally grey love interests and electric tension', 'Readers looking for a fast-paced, addictive fantasy that earns its emotion']
-      },
-      {
-        id: 16, num: '16', title: 'The Girl with the Dragon Tattoo', author: 'Stieg Larsson', genre: 'Thriller', color: '#0d0d1a', pages: 590, price: '$10.99',
-        desc: 'A disgraced journalist and a tattooed hacker investigate a forty-year-old disappearance — and uncover something far darker.',
-        quote: 'Some of them hide it — but one in every ten men hates women.',
-        themes: [{ title: 'Systemic Violence Against Women', text: 'Larsson\'s central thesis: the crimes against women that go unseen, unpunished, unspoken.' }, { title: 'The Outsider as Hero', text: 'Both Lisbeth and Blomkvist are outsiders by choice — and that\'s precisely why they can see what others miss.' }, { title: 'Corruption & Exposure', text: 'The wealthy Vanger family and the corporate world Blomkvist investigates are rotten in the same way.' }],
-        audience: ['Crime and thriller readers who want substance alongside suspense', 'Fans of complex, deeply original protagonists', 'Readers who appreciate fiction as social commentary']
-      },
-    ];
-
-    const CATS = ['All', 'Fiction', 'Sci-Fi', 'Mystery', 'Fantasy', 'Thriller', 'Literary'];
-
-    // Auth
-    const isTouch = ('ontouchstart' in window || navigator.maxTouchPoints > 0) && window.innerWidth < 1024;
-    let loggedIn = localStorage.getItem('bb_auth') === '1';
-    let pendingBook = null;
-
-    // Cursor
-    const cur = document.getElementById('cur');
-
-    if (!isTouch) {
-      document.documentElement.classList.add('custom-cursor-active');
-
-      document.addEventListener('mousemove', e => {
-        cur.style.transform = `translate(calc(${e.clientX}px - 50%), calc(${e.clientY}px - 50%))`;
-        cur.style.opacity = "1";
-      });
-
-      document.addEventListener('mouseleave', () => { cur.style.opacity = "0"; });
-    } else {
-      cur.style.display = "none";
-    }
-
-    if (!isTouch) {
-      document.addEventListener('mouseover', (e) => {
-        if (e.target.closest('a, button, .bk, .cat-btn, .cta-link')) {
-          cur.classList.add('big');
-        }
-      });
-      document.addEventListener('mouseout', (e) => {
-        if (e.target.closest('a, button, .bk, .cat-btn, .cta-link')) {
-          cur.classList.remove('big');
-        }
-      });
-    }
-
-    // Enter
-    const enterEl = document.getElementById('enter');
-    const mainEl = document.getElementById('main');
-    function doEnter() {
-      enterEl.classList.add('gone');
-      mainEl.classList.add('show');
-    }
-    document.getElementById('e-btn').addEventListener('click', doEnter);
-    enterEl.addEventListener('click', doEnter);
-
-    // Menu
-    const menuOv = document.getElementById('menu-ov');
-    const menuLogout = document.getElementById('menu-logout');
-    function syncLogoutBtn() { menuLogout.style.display = loggedIn ? 'block' : 'none'; }
-    syncLogoutBtn();
-    document.getElementById('menu-btn').addEventListener('click', () => { menuOv.classList.add('open'); syncLogoutBtn(); });
-    document.getElementById('menu-close').addEventListener('click', () => menuOv.classList.remove('open'));
-    menuOv.querySelectorAll('a').forEach(a => a.addEventListener('click', () => menuOv.classList.remove('open')));
-    menuLogout.addEventListener('click', () => {
-      loggedIn = false; localStorage.removeItem('bb_auth');
-      menuOv.classList.remove('open');
-      syncLogoutBtn();
-    });
-
-    // ── Categories + Books ────────────────────────
-    let activeCat = 'All';
-
-    const catBtns = [];
-    function renderCats() {
-      const wrap = document.getElementById('cats');
-      CATS.forEach(cat => {
-        const btn = document.createElement('button');
-        btn.className = 'cat-btn' + (cat === activeCat ? ' active' : '');
-        btn.textContent = cat;
-        btn.addEventListener('click', () => {
-          if (cat === activeCat) return;
-          activeCat = cat;
-          catBtns.forEach(b => b.classList.remove('active'));
-          btn.classList.add('active');
-          renderBooks(cat);
-        });
-        wrap.appendChild(btn);
-        catBtns.push(btn);
-      });
-    }
-
-    function renderBooks(genre) {
-      const grid = document.getElementById('books-grid');
-      grid.style.opacity = '0'; grid.style.transform = 'translateY(10px)';
-      setTimeout(() => {
-        grid.innerHTML = '';
-        const list = genre === 'All' ? BOOKS : BOOKS.filter(b => b.genre === genre);
-        list.forEach((book, index) => {
-          const div = document.createElement('div');
-          const scorched = [2, 4, 7, 9, 12, 15].includes(book.id) || index % 5 === 2;
-          div.className = `bk${scorched ? ' scorched' : ''}`;
-          div.dataset.genre = book.genre;
-          div.innerHTML = `
-            <div class="bk-cover" style="background:${book.color}">
-              <div class="bk-n">${book.num}</div>
-              <div class="bk-title">${book.title}</div>
-            </div>
-            <div class="bk-info">
-              <div class="bk-author">${book.author}</div>
-              <div class="bk-genre">${book.genre}</div>
-            </div>`;
-          div.addEventListener('click', () => onBookClick(book));
-          grid.appendChild(div);
-        });
-        grid.style.opacity = ''; grid.style.transform = '';
-        setTimeout(() => {
-          grid.querySelectorAll('.bk').forEach((el, i) => { setTimeout(() => el.classList.add('go'), i * 55); });
-        }, 30);
-      }, 220);
-    }
-
-    // ── Book click ────────────────────────────────
-    function onBookClick(book) {
-      if (!loggedIn) { pendingBook = book; openRegModal(); }
-      else openBookModal(book);
-    }
-
-    // ── Register modal ────────────────────────────
-    const regModal = document.getElementById('reg-modal');
-    const book3d = document.getElementById('book-3d');
-    const isDesktop = () => window.innerWidth >= 680;
-
-    // ── User storage ──────────────────────────────
-    function getUsers() { try { return JSON.parse(localStorage.getItem('bb_users') || '[]'); } catch (e) { return []; } }
-    function saveUsers(u) { localStorage.setItem('bb_users', JSON.stringify(u)); }
-    function findUser(email) { return getUsers().find(u => u.email.toLowerCase() === email.toLowerCase()); }
-
-    // ── Auth mode (register | signin) ────────────
-    let authMode = 'register';
-    const fNameWrap = document.getElementById('f-name-wrap');
-    const bfpTitle = document.getElementById('bfp-title');
-    const mobTitle = document.getElementById('mob-form-title');
-    const submitBtn = document.getElementById('reg-submit-btn');
-    const regNoteEl = document.getElementById('reg-note');
-    const regErrorEl = document.getElementById('reg-error');
-
-    function setAuthMode(mode) {
-      authMode = mode;
-      regErrorEl.style.display = 'none';
-      regErrorEl.textContent = '';
-      if (mode === 'register') {
-        fNameWrap.style.display = '';
-        document.getElementById('f-name').required = true;
-        bfpTitle.innerHTML = 'OPEN YOUR<br>ACCOUNT';
-        mobTitle.innerHTML = 'OPEN YOUR<br>ACCOUNT';
-        submitBtn.textContent = '[ CREATE ACCOUNT ]';
-        regNoteEl.innerHTML = 'Already a member? <a href="#" id="sign-in-lnk">Sign in</a>';
-      } else {
-        fNameWrap.style.display = 'none';
-        document.getElementById('f-name').required = false;
-        bfpTitle.innerHTML = 'WELCOME<br>BACK';
-        mobTitle.innerHTML = 'WELCOME<br>BACK';
-        submitBtn.textContent = '[ SIGN IN ]';
-        regNoteEl.innerHTML = 'No account yet? <a href="#" id="sign-in-lnk">Create one</a>';
-      }
-    }
-
-    regNoteEl.addEventListener('click', e => {
-      if (e.target.id === 'sign-in-lnk') {
-        e.preventDefault();
-        setAuthMode(authMode === 'register' ? 'signin' : 'register');
-        document.getElementById('reg-form').reset();
-      }
-    });
-
-    function showAuthSuccess(msg) {
-      document.getElementById('reg-form').style.display = 'none';
-      regNoteEl.style.display = 'none';
-      const succ = document.getElementById('reg-success');
-      document.getElementById('reg-success-msg').textContent = msg;
-      succ.style.display = 'block';
-    }
-
-    function resetAuthForm() {
-      document.getElementById('reg-form').style.display = '';
-      regNoteEl.style.display = '';
-      document.getElementById('reg-success').style.display = 'none';
-      document.getElementById('reg-form').reset();
-      regErrorEl.style.display = 'none';
-      setAuthMode('register');
-    }
-
-    function doAuthSuccess(name) {
-      loggedIn = true;
-      localStorage.setItem('bb_auth', '1');
-      syncLogoutBtn();
-      showAuthSuccess('Welcome' + (name ? ', ' + name : '') + ' — you\'re all set!');
-      setTimeout(() => {
-        closeRegModal();
-        setTimeout(resetAuthForm, 600);
-        if (pendingBook) { const b = pendingBook; pendingBook = null; setTimeout(() => openBookModal(b), 400); }
-      }, 1500);
-    }
-
-    function openRegModal() {
-      setAuthMode('register');
-      regModal.classList.add('open');
-      document.body.style.overflow = 'hidden';
-      if (isDesktop()) setTimeout(() => book3d.classList.add('book-open'), 480);
-    }
-
-    function closeRegModal() {
-      book3d.classList.remove('book-open');
-      setTimeout(() => {
-        regModal.classList.remove('open');
-        document.body.style.overflow = '';
-      }, isDesktop() ? 200 : 0);
-    }
-
-    document.getElementById('reg-x').addEventListener('click', () => { closeRegModal(); pendingBook = null; });
-    regModal.addEventListener('click', e => { if (e.target === regModal) { closeRegModal(); pendingBook = null; } });
-
-    // Bind initial sign-in link
-    setAuthMode('register');
-
-    document.getElementById('reg-form').addEventListener('submit', e => {
-      e.preventDefault();
-      const email = document.getElementById('f-email').value.trim();
-      const pass = document.getElementById('f-pass').value;
-
-      regErrorEl.style.display = 'none';
-
-      if (authMode === 'register') {
-        const name = document.getElementById('f-name').value.trim();
-        if (!name) { regErrorEl.textContent = 'Please enter your name.'; regErrorEl.style.display = 'block'; return; }
-        if (!email) { regErrorEl.textContent = 'Please enter your email.'; regErrorEl.style.display = 'block'; return; }
-        if (pass.length < 6) { regErrorEl.textContent = 'Password must be at least 6 characters.'; regErrorEl.style.display = 'block'; return; }
-        if (findUser(email)) { regErrorEl.textContent = 'An account with this email already exists.'; regErrorEl.style.display = 'block'; return; }
-        const users = getUsers();
-        users.push({ name, email: email.toLowerCase(), password: pass });
-        saveUsers(users);
-        doAuthSuccess(name);
-
-      } else {
-        if (!email) { regErrorEl.textContent = 'Please enter your email.'; regErrorEl.style.display = 'block'; return; }
-        const user = findUser(email);
-        if (!user) { regErrorEl.textContent = 'No account found with this email.'; regErrorEl.style.display = 'block'; return; }
-        if (user.password !== pass) { regErrorEl.textContent = 'Incorrect password.'; regErrorEl.style.display = 'block'; return; }
-        doAuthSuccess(user.name);
-      }
-    });
-
-    // ── Book Reader ───────────────────────────────
-    const bookModal = document.getElementById('book-modal');
-    const brLeft = document.getElementById('br-left');
-    const brRight = document.getElementById('br-right');
-    const brFlipper = document.getElementById('br-flipper');
-    const brFlipF = document.getElementById('br-flip-f');
-    const brFlipB = document.getElementById('br-flip-b');
-    const brPrevBtn = document.getElementById('br-prev');
-    const brNextBtn = document.getElementById('br-next');
-    const brDotsEl = document.getElementById('br-dots');
-    let brSpreads = [], brCurrent = 0, brFlipping = false, currentBook = null, brDotEls = [];
-    const isWide = () => window.innerWidth >= 900;
-
-    function buildSpreads(b) {
-      const pn = (t, s) => `<div class="pg-num pg-num-${s}">${t}</div>`;
-      // Spread 1: Cover | Synopsis
-      const s1L = `<div class="pg-brand">BookBlind — The Collection</div>
-      <div class="pg-cv-num">${b.num}</div>
-      <div class="pg-cv-genre">${b.genre}</div>
-      <div class="pg-cv-title">${b.title}</div>
-      <div class="pg-cv-author">${b.author}</div>
-      <div class="pg-cv-rule"></div>
-      <div class="pg-cv-quote">${b.quote}</div>${pn('i', 'l')}`;
-      const s1R = `<div class="pg-brand">Synopsis</div>
-      <div class="pg-sec-head">The <span>Story</span></div>
-      <div class="pg-body">${b.desc}</div>
-      <div class="pg-pull"><div class="pg-pull-text">"A book that stays with you long after you close the last page."</div><span class="pg-pull-attr">— Editorial Review</span></div>${pn('ii', 'r')}`;
-      // Spread 2: Themes | Audience
-      const s2L = `<div class="pg-brand">Key Themes</div>
-      <div class="pg-sec-head">What You'll <span>Explore</span></div>
-      ${b.themes.map((t, i) => `<div class="pg-theme"><div class="pg-theme-n">${i + 1}</div><div><div class="pg-theme-h">${t.title}</div><div class="pg-theme-p">${t.text}</div></div></div>`).join('')}${pn('iii', 'l')}`;
-      const s2R = `<div class="pg-brand">Readership</div>
-      <div class="pg-sec-head">Who This <span>Is For</span></div>
-      ${b.audience.map(a => `<div class="pg-for"><div class="pg-for-dot">◆</div><div class="pg-for-text">${a}</div></div>`).join('')}${pn('iv', 'r')}`;
-      // Spread 3: Details | Purchase
-      const s3L = `<div class="pg-brand">About This Book</div>
-      <div class="pg-sec-head">Book <span>Details</span></div>
-      <div class="pg-row"><span class="pg-row-l">Genre</span><span class="pg-row-v">${b.genre}</span></div>
-      <div class="pg-row"><span class="pg-row-l">Author</span><span class="pg-row-v">${b.author}</span></div>
-      <div class="pg-row"><span class="pg-row-l">Pages</span><span class="pg-row-v">${b.pages} pages</span></div>
-      <div class="pg-row"><span class="pg-row-l">Language</span><span class="pg-row-v">English</span></div>
-      <div class="pg-row"><span class="pg-row-l">Format</span><span class="pg-row-v">Digital / All Devices</span></div>
-      <div class="pg-row"><span class="pg-row-l">Access</span><span class="pg-row-v">Lifetime Ownership</span></div>${pn('v', 'l')}`;
-      const s3R = `<div class="pg-brand">Get This Book</div>
-      <div class="pg-buy-head">OWN IT<br>FOREVER</div>
-      <div class="pg-buy-sub">Digital Edition · Instant Access</div>
-      <div class="pg-buy-price">${b.price}</div>
-      <div class="pg-buy-note">One-time purchase · All formats included</div>
-      <button class="pg-buy-btn" id="pg-buy-now">[ BUY THIS BOOK ]</button>
-      <div class="pg-guarantee">✓ Instant download &nbsp;·&nbsp; ✓ 30-day guarantee &nbsp;·&nbsp; ✓ All devices</div>${pn('vi', 'r')}`;
-      return [{ l: s1L, r: s1R }, { l: s2L, r: s2R }, { l: s3L, r: s3R }];
-    }
-
-    function playPurchaseSound() {
-      try {
-        const AC = window.AudioContext || window.webkitAudioContext;
-        if (!AC) return;
-        const ctx = new AC();
-
-        // Soft tactile click
-        const clickBuf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * 0.018), ctx.sampleRate);
-        const cd = clickBuf.getChannelData(0);
-        for (let i = 0; i < cd.length; i++) cd[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / cd.length, 3);
-        const clickSrc = ctx.createBufferSource();
-        const clickG = ctx.createGain();
-        clickSrc.buffer = clickBuf;
-        clickSrc.connect(clickG); clickG.connect(ctx.destination);
-        clickG.gain.value = 0.07;
-        clickSrc.start(ctx.currentTime);
-
-        // Two ascending bell tones (Apple-style)
-        [[987.77, 0.02, 0.30, 0.11], [1318.51, 0.13, 0.24, 0.15]].forEach(([f, delay, amp, tau]) => {
-          const osc = ctx.createOscillator();
-          const g = ctx.createGain();
-          osc.type = 'sine'; osc.frequency.value = f;
-          osc.connect(g); g.connect(ctx.destination);
-          const t = ctx.currentTime + delay;
-          g.gain.setValueAtTime(0, t);
-          g.gain.linearRampToValueAtTime(amp, t + 0.007);
-          g.gain.setTargetAtTime(0, t + 0.025, tau);
-          osc.start(t); osc.stop(t + tau * 7);
-        });
-
-        setTimeout(() => { try { ctx.close(); } catch (e) { } }, 1600);
-      } catch (e) { }
-    }
-
-
-    function bindPurchaseBtns() {
-      const buy = document.getElementById('pg-buy-now');
-      if (!buy) return;
-      buy.addEventListener('click', () => {
-        const col = (currentBook && currentBook.color) ? currentBook.color : '#c44b04';
-        const title = currentBook ? currentBook.title : 'this book';
-        buy.disabled = true;
-        buy.style.opacity = '0.4';
-
-        playPurchaseSound();
-
-        brPrevBtn.disabled = true;
-        brNextBtn.disabled = true;
-        brDotEls.forEach(d => d.classList.remove('active'));
-
-        setTimeout(() => {
-          const parts = [
-            [62, -52, 4, '#E85D04'], [-62, -52, 3, 'rgba(232,93,4,.55)'],
-            [85, -4, 3, 'rgba(232,93,4,.45)'], [-85, -4, 4, 'rgba(232,93,4,.7)'],
-            [50, 62, 3, col], [-50, 62, 3, col],
-            [4, -88, 4, '#E85D04'], [28, 76, 3, 'rgba(232,93,4,.5)'],
-            [-28, 78, 4, col], [72, 42, 3, 'rgba(232,93,4,.35)']
-          ].map(([tx, ty, sz, bg], i) =>
-            `<span style="position:absolute;width:${sz}px;height:${sz}px;border-radius:1px;background:${bg};
-              --tx:${tx}px;--ty:${ty}px;transform-origin:center;
-              animation:pcPart .8s cubic-bezier(.15,.8,.3,1) ${.04 + i * .055}s both;"></span>`
-          ).join('');
-
-          brRight.innerHTML = `
-            <div class="pg-brand">Purchase Complete</div>
-            <div style="position:relative;text-align:center;padding:.3rem 0 0;overflow:hidden;">
-              <div style="position:absolute;top:.2rem;left:50%;width:220px;height:220px;border-radius:50%;
-                background:radial-gradient(circle,${col}28 0%,transparent 68%);pointer-events:none;
-                animation:pcGlow 3.2s ease-in-out infinite .5s;"></div>
-              <div style="position:absolute;top:3.2rem;left:50%;pointer-events:none;">${parts}</div>
-              <div style="display:inline-block;perspective:600px;margin-bottom:1.05rem;
-                animation:pcFlyIn .9s cubic-bezier(.16,1,.3,1) .04s both;">
-                <div style="width:66px;height:88px;position:relative;transform-style:preserve-3d;transform:rotateY(-22deg);">
-                  <div style="position:absolute;inset:0;transform:translateZ(8px);
-                    background:linear-gradient(155deg,${col}dd 0%,${col} 100%);
-                    border-left:7px solid rgba(232,93,4,.85);border-radius:0 3px 3px 0;
-                    display:flex;align-items:center;justify-content:center;
-                    box-shadow:inset -10px 0 18px rgba(0,0,0,.28);">
-                    <span style="font-size:2rem;color:rgba(255,255,255,.95);text-shadow:0 3px 10px rgba(0,0,0,.35);">✓</span>
-                  </div>
-                  <div style="position:absolute;top:0;left:-8px;width:8px;height:88px;
-                    background:linear-gradient(to right,#160e05,#3c2210);
-                    transform:rotateY(-90deg) translateZ(0) translateX(-4px);transform-origin:right center;"></div>
-                  <div style="position:absolute;top:0;right:-8px;width:8px;height:88px;
-                    background:repeating-linear-gradient(to bottom,#ede8de 0,#ede8de 1.5px,#e2ddd3 1.5px,#e2ddd3 3px);
-                    box-shadow:inset -2px 0 5px rgba(0,0,0,.15);
-                    transform:rotateY(90deg) translateZ(0) translateX(4px);transform-origin:left center;"></div>
-                </div>
-              </div>
-              <div style="font-family:'Bebas Neue';font-size:2.6rem;line-height:.86;color:#1a0e08;
-                margin-bottom:.4rem;animation:pcSlide .5s ease .55s both;">THANK YOU!</div>
-              <div style="display:flex;align-items:center;gap:.5rem;justify-content:center;
-                margin:.7rem 0 .55rem;animation:pcSlide .45s ease .66s both;">
-                <div style="flex:1;height:1px;background:linear-gradient(to right,transparent,rgba(26,14,8,.12));"></div>
-                <div style="font-size:.42rem;color:rgba(232,93,4,.4);">◆</div>
-                <div style="flex:1;height:1px;background:linear-gradient(to left,transparent,rgba(26,14,8,.12));"></div>
-              </div>
-              <div style="font-family:'Playfair Display',serif;font-style:italic;font-size:.84rem;
-                color:rgba(26,14,8,.48);animation:pcSlide .45s ease .75s both;">Your digital copy of</div>
-              <div style="font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:700;
-                color:#1a0e08;margin:.2rem 0;animation:pcSlide .45s ease .83s both;">${title}</div>
-              <div style="font-family:'Playfair Display',serif;font-style:italic;font-size:.84rem;
-                color:rgba(26,14,8,.48);margin-bottom:1.15rem;animation:pcSlide .45s ease .91s both;">
-                has been added to your library.</div>
-              <div style="font-size:.59rem;letter-spacing:.17em;text-transform:uppercase;
-                color:rgba(26,14,8,.28);margin-bottom:1rem;animation:pcSlide .4s ease .98s both;">
-                ✓ Instant access &nbsp;·&nbsp; ✓ All devices &nbsp;·&nbsp; ✓ Lifetime</div>
-              <button onclick="closeBookModal()"
-                style="display:block;width:100%;padding:1.05rem;font-family:'Space Grotesk';font-weight:700;
-                  font-size:.7rem;letter-spacing:.28em;text-transform:uppercase;background:#1a0e08;
-                  color:#f2ede3;border:none;border-radius:2px;cursor:pointer;transition:background .3s;
-                  animation:pcSlide .45s ease 1.07s both;"
-                onmouseover="this.style.background='${col}'"
-                onmouseout="this.style.background='#1a0e08'">[ START READING ]</button>
-            </div>
-          `;
-        }, 400);
-      });
-    }
-
-    function renderSpread(idx) {
-      if (isWide()) {
-        brLeft.innerHTML = brSpreads[idx].l;
-        brRight.innerHTML = brSpreads[idx].r;
-      } else {
-        // Mobile: show both pages stacked
-        brLeft.innerHTML = brSpreads[idx].l;
-        brRight.innerHTML = brSpreads[idx].r;
-      }
-      brDotEls.forEach((d, i) => d.classList.toggle('active', i === idx));
-      brPrevBtn.disabled = idx === 0;
-      brNextBtn.disabled = idx === brSpreads.length - 1;
-      bindPurchaseBtns();
-    }
-
-    function turnPage(dir) {
-      if (brFlipping) return;
-      const next = brCurrent + dir;
-      if (next < 0 || next >= brSpreads.length) return;
-      if (!isWide()) { brCurrent = next; renderSpread(brCurrent); return; }
-      brFlipping = true;
-
-      if (dir === 1) {
-        // Forward: flipper covers right half, rotates left
-        brFlipF.innerHTML = brRight.innerHTML;
-        brFlipB.innerHTML = brSpreads[next].l;
-        brFlipper.style.cssText = 'display:block;top:0;right:0;left:auto;transform-origin:left center;transform:rotateY(0deg);transition:none;width:380px;height:100%;';
-        setTimeout(() => { brLeft.innerHTML = brSpreads[next].l; }, 10);
-        requestAnimationFrame(() => requestAnimationFrame(() => {
-          brFlipper.style.transition = 'transform .88s cubic-bezier(.6,.02,.38,1)';
-          brFlipper.style.transform = 'rotateY(-180deg)';
-        }));
-      } else {
-        // Backward: flipper covers left half, rotates right
-        brFlipF.innerHTML = brLeft.innerHTML;
-        brFlipB.innerHTML = brSpreads[next].r;
-        brFlipper.style.cssText = 'display:block;top:0;left:0;right:auto;transform-origin:right center;transform:rotateY(0deg);transition:none;width:380px;height:100%;';
-        setTimeout(() => { brRight.innerHTML = brSpreads[next].r; }, 10);
-        requestAnimationFrame(() => requestAnimationFrame(() => {
-          brFlipper.style.transition = 'transform .88s cubic-bezier(.6,.02,.38,1)';
-          brFlipper.style.transform = 'rotateY(180deg)';
-        }));
-      }
-
-      setTimeout(() => {
-        brCurrent = next;
-        renderSpread(brCurrent);
-        brFlipper.style.display = 'none';
-        brFlipper.style.cssText = 'display:none;';
-        brFlipping = false;
-      }, 920);
-    }
-
-    function openBookModal(book) {
-      currentBook = book;
-      brSpreads = buildSpreads(book);
-      brCurrent = 0;
-      brDotsEl.innerHTML = brSpreads.map((_, i) => `<div class="br-dot${i === 0 ? ' active' : ''}"></div>`).join('');
-      brDotEls = [...brDotsEl.querySelectorAll('.br-dot')];
-      brFlipper.style.display = 'none';
-      renderSpread(0);
-      bookModal.classList.add('open');
-      document.body.style.overflow = 'hidden';
-    }
-
-    function closeBookModal() {
-      bookModal.classList.remove('open');
-      document.body.style.overflow = '';
-    }
-
-    document.getElementById('book-x').addEventListener('click', closeBookModal);
-    bookModal.addEventListener('click', e => { if (e.target === bookModal) closeBookModal(); });
-    brPrevBtn.addEventListener('click', () => turnPage(-1));
-    brNextBtn.addEventListener('click', () => turnPage(1));
-
-    // Logout from reader
-    function doLogout() {
-      loggedIn = false; localStorage.removeItem('bb_auth');
-      closeBookModal();
-      const ml = document.getElementById('menu-logout');
-      if (ml) ml.style.display = 'none';
-    }
-    document.getElementById('br-logout').addEventListener('click', doLogout);
-
-    // ── CTA button ────────────────────────────────
-    document.getElementById('cta-link').addEventListener('click', e => {
-      e.preventDefault();
-      if (!loggedIn) { pendingBook = null; openRegModal(); }
-      else document.getElementById('books').scrollIntoView({ behavior: 'smooth' });
-    });
-
-    // ── Background color lerp ────────────────────
-    const bgEl = document.getElementById('bg');
-    const bgSections = [...document.querySelectorAll('[data-bg]')];
-    function hexRgb(h) { return [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)]; }
-    function lerpC(a, b, t) { return [Math.round(a[0] + (b[0] - a[0]) * t), Math.round(a[1] + (b[1] - a[1]) * t), Math.round(a[2] + (b[2] - a[2]) * t)]; }
-    let cBg = hexRgb('#080808'), tBg = hexRgb('#080808');
-    // Cache section top/height offsets — recompute only on resize
-    let _bgOffsets = [];
-    function cacheBgOffsets() {
-      _bgOffsets = bgSections.map(s => { const r = s.getBoundingClientRect(); return { top: r.top + window.scrollY, h: r.height, col: s.dataset.bg }; });
-    }
-    function updateBg() {
-      const sy = window.scrollY, vh = window.innerHeight; let best = 0, col = '#080808';
-      _bgOffsets.forEach(o => { const t = o.top - sy, b = t + o.h; const v = Math.max(0, (Math.min(b, vh) - Math.max(t, 0)) / vh); if (v > best) { best = v; col = o.col; } });
-      tBg = hexRgb(col);
-    }
-
-    // ── Frame counter ────────────────────────────
-    const frameEl = document.getElementById('frame'); let lastF = 1;
-    function updateFrame() { const max = document.body.scrollHeight - window.innerHeight; const f = Math.round(1 + (max > 0 ? window.scrollY / max : 0) * 99); if (f !== lastF) { lastF = f; frameEl.textContent = '[ ' + String(f).padStart(3, '0') + ' ]'; } }
-
-    // ── Intersection observers ───────────────────
-    (() => {
-      const io05 = new IntersectionObserver(entries => { entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('show'); io05.unobserve(e.target); } }); }, { threshold: .05 });
-      const io20 = new IntersectionObserver(entries => { entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('go'); io20.unobserve(e.target); } }); }, { threshold: .2 });
-      document.querySelectorAll('.mf-line').forEach(el => io05.observe(el));
-      document.querySelectorAll('.svc-bottom').forEach(el => io20.observe(el));
-      const h = document.getElementById('cta-h'); if (h) io20.observe(h);
-    })();
-
-    // ── Pause spinning shapes when off-screen ────
-    (() => {
-      const spinEls = document.querySelectorAll('.sh-ast, .sh-cross, .sh-ring');
-      if (!spinEls.length) return;
-      const io = new IntersectionObserver(entries => {
-        entries.forEach(e => { e.target.style.animationPlayState = e.isIntersecting ? 'running' : 'paused'; });
-      }, { rootMargin: '100px' });
-      spinEls.forEach(el => { el.style.animationPlayState = 'paused'; io.observe(el); });
-    })();
-
-    // ── Pause marquee when off-screen ────────────
-    (() => {
-      const band = document.querySelector('.band-in');
-      if (!band) return;
-      band.style.animationPlayState = 'paused';
-      new IntersectionObserver(([e]) => {
-        band.style.animationPlayState = e.isIntersecting ? 'running' : 'paused';
-      }, { rootMargin: '100px' }).observe(band);
-    })();
-
-    // ── Lerp parallax ────────────────────────────
-    function lerp(a, b, t) { return a + (b - a) * t; }
-    const pwEls = [...document.querySelectorAll('.pw')];
-    const pwCur = pwEls.map(() => 0);
-    const pwTarget = pwEls.map(() => 0);
-    // Cache section offsets — recompute only on resize
-    let _pwOffsets = [];
-    function cachePwOffsets() {
-      _pwOffsets = pwEls.map(el => { const s = el.closest('section'), r = s.getBoundingClientRect(); return { top: r.top + window.scrollY, h: r.height }; });
-    }
-    function updateParallaxTargets() {
-      const sy = window.scrollY, ih = window.innerHeight;
-      _pwOffsets.forEach((o, i) => { const t = o.top - sy; pwTarget[i] = ((ih - t) / (ih + o.h) - .5) * 100; });
-    }
-    function doParallax() {
-      let moving = false;
-      pwEls.forEach((el, i) => {
-        const next = lerp(pwCur[i], pwTarget[i], .07);
-        if (Math.abs(next - pwCur[i]) > 0.02) {
-          moving = true;
-          pwCur[i] = next;
-          el.style.transform = 'translateY(' + pwCur[i].toFixed(2) + 'px)';
-        }
-      });
-      return moving;
-    }
-
-    
-
-    function clamp01(v) { return Math.max(0, Math.min(1, v)); }
-
-
-
-    // ── RAF loop (self-terminates when idle) ─────
-    let _rafId = null;
-    function raf() {
-      const moving = doParallax();
-      const next = lerpC(cBg, tBg, .06);
-      let bgChanging = false;
-      if (next[0] !== cBg[0] || next[1] !== cBg[1] || next[2] !== cBg[2]) {
-        cBg = next; bgEl.style.background = 'rgb(' + cBg.join(',') + ')';
-        bgChanging = true;
-      }
-      _rafId = (moving || bgChanging) ? requestAnimationFrame(raf) : null;
-    }
-    function startRaf() { if (!_rafId) _rafId = requestAnimationFrame(raf); }
-    startRaf();
-
-    let _scrollPending = false;
-    window.addEventListener('scroll', () => {
-      if (!_scrollPending) {
-        _scrollPending = true;
-        requestAnimationFrame(() => { updateFrame(); updateBg(); updateParallaxTargets(); startRaf(); _scrollPending = false; });
-      }
-    }, { passive: true });
-    cacheBgOffsets(); cachePwOffsets();
-    updateBg(); updateFrame(); updateParallaxTargets();
-
-    let _resizePending = false;
-    window.addEventListener('resize', () => {
-      if (!_resizePending) {
-        _resizePending = true;
-        setTimeout(() => { cacheBgOffsets(); cachePwOffsets(); updateBg(); updateParallaxTargets(); startRaf(); _resizePending = false; }, 150);
-      }
-    }, { passive: true });
-
-    renderCats();
-    renderBooks('All');
-  </script>
+      <p style="opacity:0.55;">The market doesn't care about your logo. It cares whether you solve a problem someone will pay for. Get the cash first. Polish later. The amateur waits for inspiration. The professional sends ten emails before lunch. There's a brutal truth about the online income world that nobody on TikTok will tell you...</p>
+    </div>
+    <div class="reader-fade">
+      <a href="#offer" class="btn-primary">
+        <span>Keep reading · Get the book for $27</span>
+        <span class="arrow">→</span>
+      </a>
+    </div>
+  `;
+  document.querySelectorAll('.reader-tab').forEach((t, i) => {
+    t.classList.toggle('active', i === idx);
+  });
+}
+renderSample(0);
+document.querySelectorAll('.reader-tab').forEach((t, i) => {
+  t.addEventListener('click', () => renderSample(i));
+});
+
+/* ===== TOC ===== */
+const TOC = [
+  { n: "00", t: "Foreword", s: "A note before you start", p: "05" },
+  { n: "00", t: "Introduction", s: "Why most beginners stay stuck", p: "07" },
+  { n: "01", t: "The $1,000 Math", s: "Why it's easier than you think", p: "09" },
+  { n: "02", t: "The Beginner's Trap", s: "Why 'pick a niche' is bad advice", p: "12" },
+  { n: "03", t: "The Five Paths Framework", s: "Choosing the right one for you", p: "15" },
+  { n: "04", t: "Path 1 · Service Arbitrage", s: "Sell skills you don't have yet", p: "18" },
+  { n: "05", t: "Path 2 · Digital Products", s: "Sell what you already know", p: "23" },
+  { n: "06", t: "Path 3 · Local Outreach", s: "$1K clients from cold messages", p: "27" },
+  { n: "07", t: "Path 4 · Content-to-Cash", s: "Build an audience that pays", p: "30" },
+  { n: "08", t: "Path 5 · The Hybrid Stack", s: "How operators actually work", p: "33" },
+  { n: "09", t: "The 30-Day Action Plan", s: "Day by day, week by week", p: "35" },
+  { n: "10", t: "Tools &amp; Resources", s: "Everything free or near-free", p: "38" },
+  { n: "11", t: "When Things Break", s: "Troubleshooting dead-ends", p: "40" },
+  { n: "12", t: "Bonus · The Pricing Playbook", s: "How to charge what you're worth", p: "42", bonus: true },
+  { n: "13", t: "Bonus · The Operator's Mindset", s: "Five shifts that change the game", p: "44", bonus: true },
+  { n: "—", t: "Final Word", s: "What separates you from $1,000", p: "46" },
+  { n: "A", t: "Swipe File · Scripts &amp; Templates", s: "Outreach copy that gets replies", p: "48", bonus: true },
+  { n: "B", t: "Checklists (print these)", s: "30-day printable trackers", p: "50" }
+];
+document.getElementById('tocGrid').innerHTML = TOC.map(c => `
+  <div class="toc-item ${c.bonus ? 'bonus' : ''}">
+    <div class="toc-num">${c.n}</div>
+    <div>
+      <div class="toc-title">${c.t}</div>
+      <div class="toc-sub">${c.s}</div>
+    </div>
+    <div class="toc-pg">p. ${c.p}</div>
+  </div>
+`).join('');
+
+/* ===== FAQ ===== */
+const FAQ = [
+  {
+    q: "Will this actually get me to $1,000 / month?",
+    a: "If you follow the 30-day plan, ten focused hours a week, on one path, for 90 days — yes, very likely. Month one you might hit $300 or $600. Month three is when most readers cross $1K. The variable is you, not the path. The book is direct about this."
+  },
+  {
+    q: "Do I need an audience, money, or a US bank account?",
+    a: "No, no, and no. Path 1 and Path 3 start at $0–$200, no audience required, and Stripe / Wise handle international payouts. The book has a whole section on running this from outside the US, including the time-zone advantage."
+  },
+  {
+    q: "How is this different from the 10,000 other 'make money online' guides?",
+    a: "No funnel, no upsell, no $497 bonus tier. One PDF, one price, every chapter ends in a specific action you do that week. The book is openly hostile to the guru genre — it spends an entire chapter on why most beginners stay stuck and what to do instead."
+  },
+  {
+    q: "Is this for absolute beginners or for people already freelancing?",
+    a: "Both. Beginners get the full map and a 30-day starter plan. People already at $200–$600 / month get the Hybrid Stack and the Pricing Playbook, which is usually where the breakthrough happens."
+  },
+  {
+    q: "What if I read it and it's not for me?",
+    a: "30-day no-questions-asked refund. Email the address inside the book, you get your $27 back. You keep the PDF. The only people who refund are the ones who never opened it — and that's fine."
+  },
+  {
+    q: "Why $27 and not free or $497?",
+    a: "Free attracts people who never read. $497 attracts people who buy and shelf. $27 is the price point where the people who read are the same people who act. It's also the exact tripwire price the book recommends in Chapter 5."
+  }
+];
+const faqEl = document.getElementById('faqList');
+faqEl.innerHTML = FAQ.map((f, i) => `
+  <div class="faq-item ${i === 0 ? 'open' : ''}">
+    <button class="faq-q"><span>${f.q}</span><span class="plus">+</span></button>
+    <div class="faq-a"><p>${f.a}</p></div>
+  </div>
+`).join('');
+faqEl.querySelectorAll('.faq-q').forEach(q => {
+  q.addEventListener('click', () => {
+    q.parentElement.classList.toggle('open');
+  });
+});
+</script>
 
 </body>
-
 </html>
