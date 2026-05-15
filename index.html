@@ -889,19 +889,19 @@
         <div class="b-tag"><span>Bonus 01 · Pricing</span><span class="b-val">$19 value</span></div>
         <h3 class="b-title">The Pricing Playbook</h3>
         <p class="b-sub">Why your first stated price should make you mildly uncomfortable. The three pricing rules, a working three-tier structure ($497 / $897 / $1,497) and exact scripts for the four objections you'll always hear.</p>
-        <div class="b-foot">Ch. 12 · 4 pages · Print-friendly</div>
+        <div class="b-foot">Chapter 12 · 3 rules, 4 objection scripts</div>
       </div>
       <div class="bonus-card" style="background: var(--paper-2);">
         <div class="b-tag"><span>Bonus 02 · Mindset</span><span class="b-val">$19 value</span></div>
         <h3 class="b-title">The Operator's Mindset</h3>
         <p class="b-sub">Five shifts that separate the people who make it from the people who don't. The five questions to ask yourself every Sunday for 20 minutes — the single most valuable habit in this book.</p>
-        <div class="b-foot">Ch. 13 · 3 pages · Print-friendly</div>
+        <div class="b-foot">Chapter 13 · 5 shifts, 5 weekly questions</div>
       </div>
       <div class="bonus-card" style="background: var(--paper-2);">
         <div class="b-tag"><span>Bonus 03 · Swipe File</span><span class="b-val">$29 value</span></div>
         <h3 class="b-title">Scripts &amp; Templates</h3>
         <p class="b-sub">Three cold-outreach templates that actually get replies. The follow-up sequence (Day 0 / 3 / 7 / 14 / 30). The full sales-page anatomy that converts. Copy-paste, edit, send.</p>
-        <div class="b-foot">Appendix A · 6 pages · Plain text</div>
+        <div class="b-foot">Appendix A · 7 numbered templates</div>
       </div>
     </div>
   </div>
@@ -946,12 +946,12 @@
           <li>Lifetime updates to future editions <span class="v">incl.</span></li>
         </ul>
         <div style="font-family: 'Geist Mono', monospace; font-size: 12px; color: var(--ink-3); letter-spacing: 0.05em;">
-          Total stated value · <s>$94+</s> &nbsp;·&nbsp; Your price today · <strong style="color: var(--accent); font-size: 14px;">$37</strong>
+          Total stated value · <s>$104+</s> &nbsp;·&nbsp; Your price today · <strong style="color: var(--accent); font-size: 14px;">$37</strong>
         </div>
       </div>
       <div class="offer-r">
         <div class="price-block">
-          <div class="crossed">$94 value</div>
+          <div class="crossed">$104 value</div>
           <div class="now">$37<span class="cents">.00</span></div>
           <div class="desc" style="margin-top: 12px;">USD · One-time payment</div>
           <a href="#" class="btn-primary" onclick="event.preventDefault();alert('Stripe checkout would open here.');">
@@ -1039,9 +1039,9 @@ const PATHS = [
     body: "Package knowledge into a PDF, template pack, Notion system or mini-course. Sell once, sell forever. The dream model — and the most misunderstood. Works only after you've solved the traffic problem.",
     stats: [
       { k: "Price points", v: "$7–$197" },
-      { k: "Margin", v: "<em>~95%</em>" },
-      { k: "Required audience", v: "500+" },
-      { k: "Time to build v1", v: "1–2 weeks" }
+      { k: "Audience floor", v: "<em>500+</em>" },
+      { k: "Validate at", v: "100 visitors" },
+      { k: "Click signal", v: "5% to Buy" }
     ],
     when: "Best if you have <strong>a specific skill, comfort creating content, and patience for traffic.</strong>",
     dark: false
@@ -1055,8 +1055,8 @@ const PATHS = [
     stats: [
       { k: "Avg. retainer", v: "$300–$1,000" },
       { k: "Reply rate", v: "~3%" },
-      { k: "Close rate", v: "<em>~25%</em>" },
-      { k: "Time to $1K", v: "30–60 days" }
+      { k: "Call → close", v: "<em>~30%</em>" },
+      { k: "Time to $1K", v: "<60 days" }
     ],
     when: "Best if you have <strong>thick skin, decent writing, and can DM or email at scale.</strong>",
     dark: true
@@ -1071,7 +1071,7 @@ const PATHS = [
       { k: "Followers needed", v: "<em>~5,000</em>" },
       { k: "Posts / week", v: "5" },
       { k: "Months to monetize", v: "12–18" },
-      { k: "Long-term ceiling", v: "Uncapped" }
+      { k: "Long-term ceiling", v: "<em>Highest</em>" }
     ],
     when: "Best if you have <strong>opinions worth sharing and the willingness to post 5×/week for months.</strong>",
     dark: false
@@ -1216,7 +1216,8 @@ const TOC = [
   { n: "13", t: "Bonus · The Operator's Mindset", s: "Five shifts that change the game", p: "44", bonus: true },
   { n: "—", t: "Final Word", s: "What separates you from $1,000", p: "46" },
   { n: "A", t: "Swipe File · Scripts &amp; Templates", s: "Outreach copy that gets replies", p: "48", bonus: true },
-  { n: "B", t: "Checklists (print these)", s: "30-day printable trackers", p: "50" }
+  { n: "B", t: "Checklists (print these)", s: "Daily, weekly, pre-call", p: "50" },
+  { n: "C", t: "Glossary", s: "Speak the language", p: "51" }
 ];
 document.getElementById('tocGrid').innerHTML = TOC.map(c => `
   <div class="toc-item ${c.bonus ? 'bonus' : ''}">
